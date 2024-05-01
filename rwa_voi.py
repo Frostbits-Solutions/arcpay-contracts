@@ -1,8 +1,8 @@
 from pyteal import *
-from all_contrat.constants import FEES_ADDRESS, PURCHASE_FEES
-from all_contrat.subroutine import fees_address, price, name, description
-from all_contrat.subroutine import function_send_note, function_close_app, function_payment
-from all_contrat.subroutine import on_update, on_fund, on_delete
+from constants import FEES_ADDRESS, PURCHASE_FEES
+from subroutine import fees_address, price, name, description
+from subroutine import function_send_note, function_close_app, function_payment
+from subroutine import on_update, on_fund, on_delete
 
 
 def approval_program():

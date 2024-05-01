@@ -1,12 +1,12 @@
 from algosdk.v2client.algod import AlgodClient
-from all_contrat.auction_arc200_arc72 import approval_program as contract_auction_arc200_arc72
-from all_contrat.auction_voi_arc72 import approval_program as contract_auction_voi_arc72
-from all_contrat.dutch_arc200_arc72 import approval_program as contract_dutch_arc200_arc72
-from all_contrat.dutch_voi_arc72 import approval_program as contract_dutch_voi_arc72
-from all_contrat.rwa_arc200 import approval_program as contract_rwa_arc200
-from all_contrat.rwa_voi import approval_program as contract_rwa_voi
-from all_contrat.sale_arc200_arc72 import approval_program as contract_sale_arc200_arc72
-from all_contrat.sale_voi_arc72 import approval_program as contract_sale_voi_arc72
+from auction_arc200_arc72 import approval_program as contract_auction_arc200_arc72
+from auction_voi_arc72 import approval_program as contract_auction_voi_arc72
+from dutch_arc200_arc72 import approval_program as contract_dutch_arc200_arc72
+from dutch_voi_arc72 import approval_program as contract_dutch_voi_arc72
+from rwa_arc200 import approval_program as contract_rwa_arc200
+from rwa_voi import approval_program as contract_rwa_voi
+from sale_arc200_arc72 import approval_program as contract_sale_arc200_arc72
+from sale_voi_arc72 import approval_program as contract_sale_voi_arc72
 from pyteal import compileTeal, Mode
 
 

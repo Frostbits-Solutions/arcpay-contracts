@@ -1,8 +1,8 @@
 from pyteal import *
-from all_contrat.constants import FEES_ADDRESS, PURCHASE_FEES
-from all_contrat.subroutine import nft_id, nft_app_id, fees_address, arc200_app_id, arc200_app_address
-from all_contrat.subroutine import function_transfer_arc72, function_fund_arc200, function_send_note, function_transfer_arc200
-from all_contrat.subroutine import on_fund, on_delete, nft_max_price, nft_min_price, start_time_key, end_time_key
+from constants import FEES_ADDRESS, PURCHASE_FEES
+from subroutine import nft_id, nft_app_id, fees_address, arc200_app_id, arc200_app_address
+from subroutine import function_transfer_arc72, function_fund_arc200, function_send_note, function_transfer_arc200
+from subroutine import on_fund, on_delete, nft_max_price, nft_min_price, start_time_key, end_time_key
 
 
 def approval_program():
