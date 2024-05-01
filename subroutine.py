@@ -1,6 +1,10 @@
 from pyteal import *
 
 
+FEES_ADDRESS = '3FXLFER4JF4SPVBSSTPZWGTFUYSD54QOEZ4Y4TV4ZTRHERT2Z6DH7Q54YQ'
+ZERO_FEES = 0
+PURCHASE_FEES = 0
+
 fees_address = Bytes('fees_address')
 nft_app_id = Bytes("nft_app_id")
 nft_id = Bytes("nft_id")

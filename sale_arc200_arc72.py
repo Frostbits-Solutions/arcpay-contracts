@@ -1,5 +1,5 @@
 from pyteal import *
-from constants import FEES_ADDRESS, PURCHASE_FEES
+from subroutine import FEES_ADDRESS, PURCHASE_FEES
 from subroutine import function_send_note, function_transfer_arc72, function_fund_arc200, function_transfer_arc200, function_close_app
 from subroutine import fees_address, nft_app_id, nft_id, arc200_app_address, arc200_app_id, price
 from subroutine import on_fund, on_delete, on_update
