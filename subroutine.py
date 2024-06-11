@@ -1,7 +1,9 @@
 from pyteal import *
 
 
-FEES_ADDRESS = '3FXLFER4JF4SPVBSSTPZWGTFUYSD54QOEZ4Y4TV4ZTRHERT2Z6DH7Q54YQ'
+NOTE_ADDRESS = '3FXLFER4JF4SPVBSSTPZWGTFUYSD54QOEZ4Y4TV4ZTRHERT2Z6DH7Q54YQ'
+FEES_ADDRESS = 'HYGWVRG7UKZWMGIGV2HCGDQDQ4Q5CDZZVTSB4L6BE4PZQX4QTHPPNTZU7A'
+FEES_APP_ID = 49547082
 ZERO_FEES = 0
 PURCHASE_FEES = 0
 
@@ -21,6 +23,11 @@ end_time_key = Bytes("end")
 late_bid_delay = Bytes("late_bid_delay")
 bid_account = Bytes("bid_account")
 bid_amount = Bytes("bid_amount")
+main_fees = Bytes("main_fees")
+counter_party_fees = Bytes("counter_party_fees")
+fees_app_id = Bytes("fees_app_id")
+counter_party_address = Bytes("counter_party_address")
+note_address = Bytes('note_address')
 
 
 @Subroutine(TealType.none)
@@ -66,7 +73,7 @@ def function_send_note(amount: Expr, note: Expr) -> Expr:
                 TxnField.type_enum: TxnType.Payment,
                 TxnField.amount: amount,
                 TxnField.sender: Global.current_application_address(),
-                TxnField.receiver: App.globalGet(fees_address),
+                TxnField.receiver: App.globalGet(note_address),
                 TxnField.note: note
             }
         ),
@@ -107,6 +114,34 @@ def function_payment(amount: Expr) -> Expr:
             }
         ),
         InnerTxnBuilder.Submit()
+    )
+
+
+@Subroutine(TealType.none)
+def function_contract_fees(amount: Expr, amount_counter_party: Expr) -> Expr:
+    return Seq(
+        InnerTxnBuilder.Begin(),
+        InnerTxnBuilder.SetFields(
+            {
+                TxnField.type_enum: TxnType.Payment,
+                TxnField.amount: amount,
+                TxnField.sender: Global.current_application_address(),
+                TxnField.receiver: App.globalGet(fees_address)
+            }
+        ),
+        InnerTxnBuilder.Submit(),
+        # InnerTxnBuilder.Begin(),
+        # InnerTxnBuilder.SetFields({
+        #     TxnField.type_enum: TxnType.ApplicationCall,
+        #     TxnField.application_id: App.globalGet(fees_app_id),
+        #     TxnField.on_completion: OnComplete.NoOp,
+        #     TxnField.application_args: [
+        #         Bytes("add_network_fees"),
+        #         App.globalGet(counter_party_address),
+        #         Itob(Int(10_000))
+        #     ]
+        # }),
+        # InnerTxnBuilder.Submit(),
     )
 
 
@@ -161,3 +196,14 @@ def on_fund(note):
         function_send_note(Int(CREATE_FEES), Bytes(note)),
         Approve()
     )
+
+
+def completion_reject():
+    return [
+        Or(
+            Txn.on_completion() == OnComplete.OptIn,
+            Txn.on_completion() == OnComplete.CloseOut,
+            Txn.on_completion() == OnComplete.UpdateApplication
+        ),
+        Reject()
+    ]
