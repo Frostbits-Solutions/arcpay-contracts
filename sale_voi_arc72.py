@@ -1,8 +1,8 @@
 from pyteal import *
-from subroutine import FEES_ADDRESS, PURCHASE_FEES
-from subroutine import function_send_note, function_close_app, function_transfer_arc72, function_payment
+from subroutine import FEES_ADDRESS, FEES_APP_ID, NOTE_ADDRESS
+from subroutine import function_send_note, function_close_app, function_transfer_arc72, function_payment, function_contract_fees
 from subroutine import fees_address, nft_id, nft_app_id, price
-from subroutine import on_delete, on_fund, on_update
+from subroutine import on_delete, on_fund, on_update, completion_reject, main_fees, counter_party_fees, counter_party_address, fees_app_id, note_address
 
 
 def approval_program():
@@ -12,6 +12,11 @@ def approval_program():
         App.globalPut(nft_id, Txn.application_args[1]),
         App.globalPut(price, Btoi(Txn.application_args[2])),
         App.globalPut(fees_address, Addr(FEES_ADDRESS)),
+        App.globalPut(main_fees, Int(2)),
+        App.globalPut(counter_party_fees, Int(1)),
+        App.globalPut(counter_party_address, Addr('6J4RO7U2WYQWOGWXQOZUTBBA46W4QSFL5HTHJWC5BZR53RSYRAOPAY7KPM')),
+        App.globalPut(fees_app_id, Int(FEES_APP_ID)),
+        App.globalPut(note_address, Addr(NOTE_ADDRESS)),
         Approve()
     )
 
@@ -25,8 +30,41 @@ def approval_program():
             )
         ),
         Seq(
-            function_send_note(Int(PURCHASE_FEES), Bytes("sale,buy,1/72")),
-            function_payment(App.globalGet(price)-Int(PURCHASE_FEES)),
+            function_send_note(Int(0), Bytes("sale,buy,1/72")),
+            function_contract_fees(
+                Div(
+                    Mul(
+                        App.globalGet(price),
+                        Add(
+                            App.globalGet(main_fees),
+                            App.globalGet(counter_party_fees)
+                        )
+                    ),
+                    Int(100)
+                ),
+                Div(
+                    Mul(
+                        App.globalGet(price),
+                        App.globalGet(counter_party_fees)
+                    ),
+                    Int(100)
+                )
+            ),
+            function_payment(
+                Minus(
+                    App.globalGet(price),
+                    Div(
+                        Mul(
+                            App.globalGet(price),
+                            Add(
+                                App.globalGet(main_fees),
+                                App.globalGet(counter_party_fees)
+                            )
+                        ),
+                        Int(100)
+                    )
+                )
+            ),
             function_transfer_arc72(Txn.sender()),
             function_close_app(),
             Approve()
@@ -41,14 +79,7 @@ def approval_program():
         [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("update_price")), on_update("sale,update,1/72")],
         [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("pre_validate")), Approve()],
         [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("buy")), on_buy],
-        [
-            Or(
-                Txn.on_completion() == OnComplete.OptIn,
-                Txn.on_completion() == OnComplete.CloseOut,
-                Txn.on_completion() == OnComplete.UpdateApplication
-            ),
-            Reject(),
-        ],
+        completion_reject()
     )
 
     return program
