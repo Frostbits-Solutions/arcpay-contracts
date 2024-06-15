@@ -2,8 +2,8 @@ from pyteal import *
 
 
 NOTE_ADDRESS = '3FXLFER4JF4SPVBSSTPZWGTFUYSD54QOEZ4Y4TV4ZTRHERT2Z6DH7Q54YQ'
-FEES_ADDRESS = 'HYGWVRG7UKZWMGIGV2HCGDQDQ4Q5CDZZVTSB4L6BE4PZQX4QTHPPNTZU7A'
-FEES_APP_ID = 49547082
+FEES_ADDRESS = 'JTVFVVZ62GAKYZIS6GCQJMQZXX2UXAAPIOP4GYLMEF3J4UT5FWWVLXMP4E'#'HYGWVRG7UKZWMGIGV2HCGDQDQ4Q5CDZZVTSB4L6BE4PZQX4QTHPPNTZU7A'
+FEES_APP_ID = 49621948#49547082
 ZERO_FEES = 0
 PURCHASE_FEES = 0
 
@@ -129,19 +129,18 @@ def function_contract_fees(amount: Expr, amount_counter_party: Expr) -> Expr:
                 TxnField.receiver: App.globalGet(fees_address)
             }
         ),
+        InnerTxnBuilder.Next(),
+        InnerTxnBuilder.SetFields({
+            TxnField.type_enum: TxnType.ApplicationCall,
+            TxnField.application_id: App.globalGet(fees_app_id),
+            TxnField.on_completion: OnComplete.NoOp,
+            TxnField.application_args: [
+                Bytes("add_network_fees"),
+                App.globalGet(counter_party_address),
+                Itob(amount_counter_party)
+            ]
+        }),
         InnerTxnBuilder.Submit(),
-        # InnerTxnBuilder.Begin(),
-        # InnerTxnBuilder.SetFields({
-        #     TxnField.type_enum: TxnType.ApplicationCall,
-        #     TxnField.application_id: App.globalGet(fees_app_id),
-        #     TxnField.on_completion: OnComplete.NoOp,
-        #     TxnField.application_args: [
-        #         Bytes("add_network_fees"),
-        #         App.globalGet(counter_party_address),
-        #         Itob(Int(10_000))
-        #     ]
-        # }),
-        # InnerTxnBuilder.Submit(),
     )
 
 
