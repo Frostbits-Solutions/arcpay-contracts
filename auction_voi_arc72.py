@@ -1,7 +1,7 @@
 from pyteal import *
-from subroutine import FEES_ADDRESS, ZERO_FEES, PURCHASE_FEES
-from subroutine import function_send_note, function_close_app, function_transfer_arc72, function_payment
-from subroutine import nft_id, nft_app_id, bid_amount, bid_account, late_bid_delay, fees_address, end_time_key, nft_min_price, on_fund
+from subroutine import FEES_ADDRESS, ZERO_FEES, PURCHASE_FEES, FEES_APP_ID, NOTE_ADDRESS, function_contract_fees
+from subroutine import function_send_note, function_close_app, function_transfer_arc72, function_payment, main_fees, counter_party_fees, counter_party_address, fees_app_id, note_address
+from subroutine import nft_id, nft_app_id, bid_amount, bid_account, late_bid_delay, fees_address, end_time_key, nft_min_price, on_fund, completion_reject
 
 
 def approval_program():
@@ -28,6 +28,11 @@ def approval_program():
         App.globalPut(bid_account, Global.zero_address()),
         App.globalPut(late_bid_delay, Int(600)),
         App.globalPut(bid_amount, Int(0)),
+        App.globalPut(main_fees, Int(2)),
+        App.globalPut(counter_party_fees, Int(1)),
+        App.globalPut(counter_party_address, Addr('6J4RO7U2WYQWOGWXQOZUTBBA46W4QSFL5HTHJWC5BZR53RSYRAOPAY7KPM')),
+        App.globalPut(fees_app_id, Int(FEES_APP_ID)),
+        App.globalPut(note_address, Addr(NOTE_ADDRESS)),
         Approve(),
     )
 
@@ -68,7 +73,40 @@ def approval_program():
         ),
         function_send_note(Int(PURCHASE_FEES), Bytes("auction,close,1/72")),
         function_transfer_arc72(App.globalGet(bid_account)),
-        function_payment(App.globalGet(bid_amount)),
+        function_contract_fees(
+            Div(
+                Mul(
+                    App.globalGet(bid_amount),
+                    Add(
+                        App.globalGet(main_fees),
+                        App.globalGet(counter_party_fees)
+                    )
+                ),
+                Int(100)
+            ),
+            Div(
+                Mul(
+                    App.globalGet(bid_amount),
+                    App.globalGet(counter_party_fees)
+                ),
+                Int(100)
+            )
+        ),
+        function_payment(
+            Minus(
+                App.globalGet(bid_amount),
+                Div(
+                    Mul(
+                        App.globalGet(bid_amount),
+                        Add(
+                            App.globalGet(main_fees),
+                            App.globalGet(counter_party_fees)
+                        )
+                    ),
+                    Int(100)
+                )
+            )
+        ),
         function_close_app(),
         Approve()
     )
@@ -97,14 +135,7 @@ def approval_program():
         [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("bid")), on_bid],
         [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("close")), on_close],
         [Txn.on_completion() == OnComplete.DeleteApplication, on_delete],
-        [
-            Or(
-                Txn.on_completion() == OnComplete.OptIn,
-                Txn.on_completion() == OnComplete.CloseOut,
-                Txn.on_completion() == OnComplete.UpdateApplication
-            ),
-            Reject(),
-        ],
+        completion_reject()
     )
 
     return program
