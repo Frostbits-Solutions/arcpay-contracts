@@ -90,21 +90,25 @@ def approval_program():
     )
 
     add_arc200_fees = Seq(
-        # TODO add assert that total value send is more than the amount we add to the user
-        InnerTxnBuilder.Begin(),
-        InnerTxnBuilder.SetFields(
-            {
-                TxnField.type_enum: TxnType.ApplicationCall,
-                TxnField.application_id: App.globalGet(Itob(Gtxn[Txn.group_index() - Int(1)].application_id())),
-                TxnField.on_completion: OnComplete.NoOp,
-                TxnField.application_args: [
-                    Bytes('add_fees'),
-                    Txn.application_args[1],
-                    Txn.application_args[2]
-                ]
-            }
+        If(
+            Btoi(Substring(Gtxn[Txn.group_index() - Int(1)].application_args[2], Int(24), Int(32))) > Btoi(Txn.application_args[2])
+        ).Then(
+            InnerTxnBuilder.Begin(),
+            InnerTxnBuilder.SetFields(
+                {
+                    TxnField.type_enum: TxnType.ApplicationCall,
+                    TxnField.application_id: App.globalGet(Txn.application_args[3]),
+                    TxnField.on_completion: OnComplete.NoOp,
+                    TxnField.application_args: [
+                        Bytes('add_fees'),
+                        Txn.application_args[1],
+                        Txn.application_args[2]
+                    ],
+                    TxnField.applications: [App.globalGet(Txn.application_args[3])]
+                }
+            ),
+            InnerTxnBuilder.Submit(),
         ),
-        InnerTxnBuilder.Submit(),
         Approve()
     )
 
@@ -190,6 +194,7 @@ def approval_program():
     program = Cond(
         [Txn.application_id() == Int(0), on_create],
         [Txn.on_completion() == OnComplete.DeleteApplication, on_delete],
+        [Txn.application_args[0] == Bytes("test"), Approve()],
         [Txn.application_args[0] == Bytes("add_master"), add_master],
         [Txn.application_args[0] == Bytes("del_master"), del_master],
         [Txn.application_args[0] == Bytes("add_arc200"), add_arc200],
