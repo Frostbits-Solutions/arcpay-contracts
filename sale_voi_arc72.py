@@ -11,10 +11,10 @@ def approval_program():
         App.globalPut(nft_app_id, Btoi(Txn.application_args[0])),
         App.globalPut(nft_id, Txn.application_args[1]),
         App.globalPut(price, Btoi(Txn.application_args[2])),
+        App.globalPut(counter_party_address, Txn.application_args[3]),
+        App.globalPut(counter_party_fees, Btoi(Txn.application_args[4])),
         App.globalPut(fees_address, Addr(FEES_ADDRESS)),
         App.globalPut(main_fees, Int(2)),
-        App.globalPut(counter_party_fees, Int(1)),
-        App.globalPut(counter_party_address, Addr('6J4RO7U2WYQWOGWXQOZUTBBA46W4QSFL5HTHJWC5BZR53RSYRAOPAY7KPM')),
         App.globalPut(fees_app_id, Int(FEES_APP_ID)),
         App.globalPut(note_address, Addr(NOTE_ADDRESS)),
         Approve()
