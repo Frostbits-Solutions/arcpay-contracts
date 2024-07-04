@@ -28,6 +28,7 @@ counter_party_fees = Bytes("counter_party_fees")
 fees_app_id = Bytes("fees_app_id")
 counter_party_address = Bytes("counter_party_address")
 note_address = Bytes('note_address')
+total_client = Bytes('total_client')
 
 
 @Subroutine(TealType.none)
@@ -61,6 +62,13 @@ def function_fund_arc200() -> Expr:
             }
         ),
         InnerTxnBuilder.Submit(),
+    )
+
+
+@Subroutine(TealType.bytes)
+def app_addr_from_id(app_id):
+    return Sha512_256(
+        Concat(Bytes("appID"), Itob(app_id))
     )
 
 
