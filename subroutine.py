@@ -145,6 +145,38 @@ def function_contract_fees(amount: Expr, amount_counter_party: Expr) -> Expr:
 
 
 @Subroutine(TealType.none)
+def function_contract_fees_arc200(amount: Expr, amount_counter_party: Expr) -> Expr:
+    return Seq(
+        InnerTxnBuilder.Begin(),
+        InnerTxnBuilder.SetFields(
+            {
+                TxnField.type_enum: TxnType.ApplicationCall,
+                TxnField.application_id: App.globalGet(arc200_app_id),
+                TxnField.on_completion: OnComplete.NoOp,
+                TxnField.application_args: [
+                    Bytes("base16", "da7025b9"),
+                    App.globalGet(fees_address),
+                    Concat(BytesZero(Int(24)), Itob(amount))
+                ]
+            }
+        ),
+        InnerTxnBuilder.Next(),
+        InnerTxnBuilder.SetFields({
+            TxnField.type_enum: TxnType.ApplicationCall,
+            TxnField.application_id: App.globalGet(fees_app_id),
+            TxnField.on_completion: OnComplete.NoOp,
+            TxnField.application_args: [
+                Bytes("add_arc200_fees"),
+                App.globalGet(counter_party_address),
+                Itob(amount_counter_party),
+                Itob(App.globalGet(arc200_app_id)),
+            ]
+        }),
+        InnerTxnBuilder.Submit(),
+    )
+
+
+@Subroutine(TealType.none)
 def function_transfer_arc72(to: Expr) -> Expr:
     return Seq(
         InnerTxnBuilder.Begin(),
