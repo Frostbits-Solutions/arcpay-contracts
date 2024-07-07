@@ -1,7 +1,7 @@
 from pyteal import *
-from subroutine import FEES_ADDRESS, ZERO_FEES, PURCHASE_FEES
+from subroutine import FEES_ADDRESS, ZERO_FEES, PURCHASE_FEES, counter_party_address, counter_party_fees, FEES_APP_ID, NOTE_ADDRESS
 from subroutine import function_fund_arc200, function_send_note, function_close_app, function_transfer_arc72, function_transfer_arc200
-from subroutine import nft_id, nft_app_id, late_bid_delay, bid_amount, bid_account, fees_address, end_time_key, nft_min_price, on_fund, arc200_app_id, arc200_app_address
+from subroutine import nft_id, main_fees, function_contract_fees_arc200, fees_app_id, note_address, nft_app_id, late_bid_delay, bid_amount, bid_account, fees_address, end_time_key, nft_min_price, on_fund, arc200_app_id, arc200_app_address, completion_reject
 
 
 def approval_program():
@@ -19,10 +19,15 @@ def approval_program():
         App.globalPut(end_time_key, Btoi(Txn.application_args[3])),
         App.globalPut(arc200_app_id, Btoi(Txn.application_args[4])),
         App.globalPut(arc200_app_address, Txn.application_args[5]),
+        App.globalPut(counter_party_address, Txn.application_args[6]),
+        App.globalPut(counter_party_fees, Btoi(Txn.application_args[7])),
         App.globalPut(fees_address, Addr(FEES_ADDRESS)),
         App.globalPut(bid_account, Global.zero_address()),
         App.globalPut(late_bid_delay, Int(600)),
         App.globalPut(bid_amount, Int(0)),
+        App.globalPut(main_fees, Int(2)),
+        App.globalPut(fees_app_id, Int(FEES_APP_ID)),
+        App.globalPut(note_address, Addr(NOTE_ADDRESS)),
         Approve(),
     )
 
@@ -62,8 +67,42 @@ def approval_program():
         ),
         function_send_note(Int(PURCHASE_FEES), Bytes("auction,close,200/72")),
         function_transfer_arc72(App.globalGet(bid_account)),
+        function_contract_fees_arc200(
+            Div(
+                Mul(
+                    App.globalGet(bid_amount),
+                    Add(
+                        App.globalGet(main_fees),
+                        App.globalGet(counter_party_fees)
+                    )
+                ),
+                Int(100)
+            ),
+            Div(
+                Mul(
+                    App.globalGet(bid_amount),
+                    App.globalGet(counter_party_fees)
+                ),
+                Int(100)
+            )
+        ),
         function_fund_arc200(),
-        function_transfer_arc200(App.globalGet(bid_amount), Global.creator_address()),
+        function_transfer_arc200(
+            Minus(
+                App.globalGet(bid_amount),
+                Div(
+                    Mul(
+                        App.globalGet(bid_amount),
+                        Add(
+                            App.globalGet(main_fees),
+                            App.globalGet(counter_party_fees)
+                        )
+                    ),
+                    Int(100)
+                )
+            ),
+            Global.creator_address()
+        ),
         function_close_app(),
         Approve()
     )
@@ -92,14 +131,7 @@ def approval_program():
         [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("bid")), on_bid],
         [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("close")), on_close],
         [Txn.on_completion() == OnComplete.DeleteApplication, on_delete],
-        [
-            Or(
-                Txn.on_completion() == OnComplete.OptIn,
-                Txn.on_completion() == OnComplete.CloseOut,
-                Txn.on_completion() == OnComplete.UpdateApplication
-            ),
-            Reject(),
-        ],
+        completion_reject()
     )
 
     return program
