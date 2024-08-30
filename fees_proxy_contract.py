@@ -10,21 +10,47 @@ def approval_program():
         Approve()
     )
 
-    add_arc200 = Seq(
+    add_token = Seq(
         If(
             App.globalGet(Concat(Bytes('m_'), Txn.sender())) == Txn.sender()
         ).Then(
-            App.globalPut(Txn.application_args[1], Btoi(Txn.application_args[2])),
+            If(
+                Txn.application_args[1] == Bytes("asa")
+            ).Then(
+                InnerTxnBuilder.Begin(),
+                InnerTxnBuilder.SetFields(
+                    {
+                        TxnField.type_enum: TxnType.AssetTransfer,
+                        TxnField.xfer_asset: Btoi(Txn.application_args[2]),
+                        TxnField.asset_receiver: Global.current_application_address(),
+                    }
+                ),
+                InnerTxnBuilder.Submit()
+            ),
+            App.globalPut(Txn.application_args[2], Btoi(Txn.application_args[3])),
             Approve()
         ),
         Reject()
     )
 
-    del_arc200 = Seq(
+    del_token = Seq(
         If(
             App.globalGet(Concat(Bytes('m_'), Txn.sender())) == Txn.sender()
         ).Then(
-            App.globalDel(Txn.application_args[1]),
+            If(
+                Txn.application_args[1] == Bytes("asa")
+            ).Then(
+                InnerTxnBuilder.Begin(),
+                InnerTxnBuilder.SetFields(
+                    {
+                        TxnField.type_enum: TxnType.AssetTransfer,
+                        TxnField.xfer_asset: Btoi(Txn.application_args[2]),
+                        TxnField.asset_close_to: Global.creator_address()
+                    }
+                ),
+                InnerTxnBuilder.Submit()
+            ),
+            App.globalDel(Txn.application_args[2]),
             Approve()
         ),
         Reject()
@@ -91,24 +117,35 @@ def approval_program():
 
     add_arc200_fees = Seq(
         If(
-            Btoi(Substring(Gtxn[Txn.group_index() - Int(1)].application_args[2], Int(24), Int(32))) > Btoi(Txn.application_args[2])
+            Gtxn[Txn.group_index() - Int(1)].type_enum() == TxnType.AssetTransfer
         ).Then(
-            InnerTxnBuilder.Begin(),
-            InnerTxnBuilder.SetFields(
-                {
-                    TxnField.type_enum: TxnType.ApplicationCall,
-                    TxnField.application_id: App.globalGet(Txn.application_args[3]),
-                    TxnField.on_completion: OnComplete.NoOp,
-                    TxnField.application_args: [
-                        Bytes('add_fees'),
-                        Txn.application_args[1],
-                        Txn.application_args[2]
-                    ],
-                    TxnField.applications: [App.globalGet(Txn.application_args[3])]
-                }
-            ),
-            InnerTxnBuilder.Submit(),
+            If(
+                Gtxn[Txn.group_index() - Int(1)].asset_amount() <= Btoi(Txn.application_args[2])
+            ).Then(
+                Approve()
+            )
+        ).Else(
+            If(
+                Btoi(Substring(Gtxn[Txn.group_index() - Int(1)].application_args[2], Int(24), Int(32))) <= Btoi(Txn.application_args[2])
+            ).Then(
+                Approve()
+            )
         ),
+        InnerTxnBuilder.Begin(),
+        InnerTxnBuilder.SetFields(
+            {
+                TxnField.type_enum: TxnType.ApplicationCall,
+                TxnField.application_id: App.globalGet(Txn.application_args[3]),
+                TxnField.on_completion: OnComplete.NoOp,
+                TxnField.application_args: [
+                    Bytes('add_fees'),
+                    Txn.application_args[1],
+                    Txn.application_args[2]
+                ],
+                TxnField.applications: [App.globalGet(Txn.application_args[3])]
+            }
+        ),
+        InnerTxnBuilder.Submit(),
         Approve()
     )
 
@@ -197,8 +234,8 @@ def approval_program():
         [Txn.application_args[0] == Bytes("test"), Approve()],
         [Txn.application_args[0] == Bytes("add_master"), add_master],
         [Txn.application_args[0] == Bytes("del_master"), del_master],
-        [Txn.application_args[0] == Bytes("add_arc200"), add_arc200],
-        [Txn.application_args[0] == Bytes("del_arc200"), del_arc200],
+        [Txn.application_args[0] == Bytes("add_token"), add_token],
+        [Txn.application_args[0] == Bytes("del_token"), del_token],
         [Txn.application_args[0] == Bytes("add_client"), add_client],
         [Txn.application_args[0] == Bytes("del_client"), del_client],
         [Txn.application_args[0] == Bytes("add_network_fees"), add_network_fees],
