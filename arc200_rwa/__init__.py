@@ -1,0 +1,1 @@
+from arc200_rwa.sale_arc200_rwa import contract_sale_arc200_rwa

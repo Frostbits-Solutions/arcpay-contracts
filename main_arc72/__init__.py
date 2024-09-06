@@ -1,0 +1,3 @@
+from main_arc72.auction_main_arc72 import contract_auction_main_arc72
+from main_arc72.dutch_main_arc72 import contract_dutch_main_arc72
+from main_arc72.sale_main_arc72 import contract_sale_main_arc72

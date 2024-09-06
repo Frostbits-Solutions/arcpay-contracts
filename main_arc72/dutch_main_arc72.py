@@ -1,11 +1,10 @@
-from pyteal import *
-from subroutine import FEES_ADDRESS, PURCHASE_FEES, FEES_APP_ID, NOTE_ADDRESS
-from subroutine import nft_id, nft_app_id, fees_address, main_fees, counter_party_fees, counter_party_address, fees_app_id, note_address
-from subroutine import function_send_note, function_close_app, function_transfer_arc72, function_payment, function_contract_fees
-from subroutine import on_delete, on_fund, nft_max_price, nft_min_price, start_time_key, end_time_key, completion_reject
+from subroutine import *
+from main_arc72.note_signature import note_signature
+
+note_type = "dutch"
 
 
-def approval_program():
+def contract_dutch_main_arc72():
 
     on_create = Seq(
         App.globalPut(nft_app_id, Btoi(Txn.application_args[0])),
@@ -22,7 +21,6 @@ def approval_program():
         App.globalPut(main_fees, Int(2)),
         App.globalPut(fees_app_id, Int(FEES_APP_ID)),
         App.globalPut(note_address, Addr(NOTE_ADDRESS)),
-
         Approve(),
     )
 
@@ -57,6 +55,7 @@ def approval_program():
             )
         ),
         Seq(
+            function_send_note(Int(PURCHASE_FEES), Bytes(f"{note_type},buy,{note_signature}")),
             function_contract_fees(
                 Div(
                     Mul(
@@ -92,7 +91,7 @@ def approval_program():
                 )
             ),
             function_transfer_arc72(Txn.sender()),
-            function_send_note(Int(PURCHASE_FEES), Bytes("dutch,buy,1/72")),
+
             function_close_app(),
             Approve()
         ),
@@ -101,8 +100,8 @@ def approval_program():
 
     program = Cond(
         [Txn.application_id() == Int(0), on_create],
-        [Txn.on_completion() == OnComplete.DeleteApplication, on_delete("dutch,cancel,1/72")],
-        [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("fund")), on_fund("dutch,create,1/72")],
+        [Txn.on_completion() == OnComplete.DeleteApplication, on_delete(f"{note_type},cancel,{note_signature}")],
+        [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("fund")), on_fund(f"{note_type},create,{note_signature}")],
         [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("pre_validate")), Approve()],
         [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("buy")), on_buy],
         completion_reject()

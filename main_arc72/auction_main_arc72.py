@@ -1,10 +1,10 @@
-from pyteal import *
-from subroutine import FEES_ADDRESS, ZERO_FEES, PURCHASE_FEES, FEES_APP_ID, NOTE_ADDRESS, function_contract_fees
-from subroutine import function_send_note, function_close_app, function_transfer_arc72, function_payment, main_fees, counter_party_fees, counter_party_address, fees_app_id, note_address
-from subroutine import nft_id, nft_app_id, bid_amount, bid_account, late_bid_delay, fees_address, end_time_key, nft_min_price, on_fund, completion_reject
+from subroutine import *
+from main_arc72.note_signature import note_signature
+
+note_type = "auction"
 
 
-def approval_program():
+def contract_auction_main_arc72():
     @Subroutine(TealType.none)
     def function_repay_bidder() -> Expr:
         return Seq(
@@ -47,7 +47,7 @@ def approval_program():
             )
         ),
         Seq(
-            function_send_note(Int(ZERO_FEES), Bytes("auction,bid,1/72")),
+            function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},bid,{note_signature}")),
             If(
                 App.globalGet(bid_account) != Global.zero_address()
             ).Then(
@@ -71,8 +71,7 @@ def approval_program():
                 App.globalGet(end_time_key) <= Global.latest_timestamp()
             )
         ),
-        function_send_note(Int(PURCHASE_FEES), Bytes("auction,close,1/72")),
-        function_transfer_arc72(App.globalGet(bid_account)),
+        function_send_note(Int(PURCHASE_FEES), Bytes(f"{note_type},close,{note_signature}")),
         function_contract_fees(
             Div(
                 Mul(
@@ -107,18 +106,19 @@ def approval_program():
                 )
             )
         ),
+        function_transfer_arc72(App.globalGet(bid_account)),
         function_close_app(),
         Approve()
     )
 
-    on_delete = Seq(
+    on_delete_auction = Seq(
         Assert(
             Or(
                 Txn.sender() == Global.creator_address(),
                 Txn.sender() == App.globalGet(fees_address)
             )
         ),
-        function_send_note(Int(ZERO_FEES), Bytes("auction,cancel,1/72")),
+        function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},cancel,{note_signature}")),
         If(
             App.globalGet(bid_account) != Global.zero_address()
         ).Then(
@@ -130,11 +130,11 @@ def approval_program():
 
     program = Cond(
         [Txn.application_id() == Int(0), on_create],
-        [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("fund")), on_fund("auction,create,1/72")],
+        [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("fund")), on_fund(f"{note_type},create,{note_signature}")],
         [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("pre_validate")), Approve()],
         [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("bid")), on_bid],
         [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("close")), on_close],
-        [Txn.on_completion() == OnComplete.DeleteApplication, on_delete],
+        [Txn.on_completion() == OnComplete.DeleteApplication, on_delete_auction],
         completion_reject()
     )
 

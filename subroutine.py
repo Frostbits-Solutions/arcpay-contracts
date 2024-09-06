@@ -1,15 +1,16 @@
 from pyteal import *
 
 
-NOTE_ADDRESS = '3FXLFER4JF4SPVBSSTPZWGTFUYSD54QOEZ4Y4TV4ZTRHERT2Z6DH7Q54YQ'
-FEES_ADDRESS = 'ZTVMV2EQNUU3HJQ3HUPBLXMPD3PLVQGCJ4SDGOM4BU2W4554UTMPDQ2TTU'#'HYGWVRG7UKZWMGIGV2HCGDQDQ4Q5CDZZVTSB4L6BE4PZQX4QTHPPNTZU7A'
-FEES_APP_ID = 54881294#49547082
+NOTE_ADDRESS ='UTOIVZJSC36XCL4HBVKHFYDA5WMBJQNR7GM3NPK5M7OH2SQBJW3KTUKZAA'# '3FXLFER4JF4SPVBSSTPZWGTFUYSD54QOEZ4Y4TV4ZTRHERT2Z6DH7Q54YQ'
+FEES_ADDRESS = 'UTOIVZJSC36XCL4HBVKHFYDA5WMBJQNR7GM3NPK5M7OH2SQBJW3KTUKZAA'#'ZTVMV2EQNUU3HJQ3HUPBLXMPD3PLVQGCJ4SDGOM4BU2W4554UTMPDQ2TTU'#'HYGWVRG7UKZWMGIGV2HCGDQDQ4Q5CDZZVTSB4L6BE4PZQX4QTHPPNTZU7A'
+FEES_APP_ID = 718742597#54881294#49547082
 ZERO_FEES = 0
 PURCHASE_FEES = 0
 
 fees_address = Bytes('fees_address')
 nft_app_id = Bytes("nft_app_id")
 nft_id = Bytes("nft_id")
+asa_id = Bytes("asa_id")
 arc200_app_address = Bytes("arc200_app_address")
 arc200_app_id = Bytes("arc200_app_id")
 price = Bytes("price")
@@ -29,6 +30,7 @@ fees_app_id = Bytes("fees_app_id")
 counter_party_address = Bytes("counter_party_address")
 note_address = Bytes('note_address')
 total_client = Bytes('total_client')
+paiment_asa_id = Bytes('paiment_asa_id')
 
 
 @Subroutine(TealType.none)
@@ -143,7 +145,35 @@ def function_contract_fees(amount: Expr, amount_counter_party: Expr) -> Expr:
             TxnField.application_id: App.globalGet(fees_app_id),
             TxnField.on_completion: OnComplete.NoOp,
             TxnField.application_args: [
-                Bytes("add_network_fees"),
+                Bytes("manage_network_fees"),
+                App.globalGet(counter_party_address),
+                Itob(amount_counter_party)
+            ]
+        }),
+        InnerTxnBuilder.Submit(),
+    )
+
+
+@Subroutine(TealType.none)
+def function_contract_fees_asa(amount: Expr, amount_counter_party: Expr) -> Expr:
+    return Seq(
+        InnerTxnBuilder.Begin(),
+        InnerTxnBuilder.SetFields(
+            {
+                TxnField.type_enum: TxnType.AssetTransfer,
+                TxnField.xfer_asset: App.globalGet(paiment_asa_id),
+                TxnField.asset_receiver: App.globalGet(fees_address),
+                TxnField.asset_amount: amount,
+                TxnField.fee: Global.min_txn_fee()
+            }
+        ),
+        InnerTxnBuilder.Next(),
+        InnerTxnBuilder.SetFields({
+            TxnField.type_enum: TxnType.ApplicationCall,
+            TxnField.application_id: App.globalGet(fees_app_id),
+            TxnField.on_completion: OnComplete.NoOp,
+            TxnField.application_args: [
+                Bytes("manage_asa_fees"),
                 App.globalGet(counter_party_address),
                 Itob(amount_counter_party)
             ]
@@ -222,8 +252,8 @@ def on_update(note):
 
 def on_delete(note):
     return Seq(
-        function_send_note(Int(0), Bytes(note)),
         Assert(Txn.sender() == Global.creator_address()),
+        function_send_note(Int(0), Bytes(note)),
         function_close_app(),
         Approve()
     )
@@ -237,6 +267,73 @@ def on_fund(note):
     )
 
 
+def on_fund_optin_only_asa(note):
+    return Seq(
+        Assert(Txn.sender() == Global.creator_address()),
+        function_send_note(Int(CREATE_FEES), Bytes(note)),
+        Seq(
+            InnerTxnBuilder.Begin(),
+            InnerTxnBuilder.SetFields(
+                {
+                    TxnField.type_enum: TxnType.AssetTransfer,
+                    TxnField.xfer_asset: App.globalGet(paiment_asa_id),
+                    TxnField.asset_receiver: Global.current_application_address(),
+                }
+            ),
+            InnerTxnBuilder.Submit()
+        ),
+        Approve()
+    )
+
+
+def on_fund_optin_asa(note):
+    return Seq(
+        Assert(Txn.sender() == Global.creator_address()),
+        function_send_note(Int(CREATE_FEES), Bytes(note)),
+        Seq(
+            InnerTxnBuilder.Begin(),
+            InnerTxnBuilder.SetFields(
+                {
+                    TxnField.type_enum: TxnType.AssetTransfer,
+                    TxnField.xfer_asset: App.globalGet(asa_id),
+                    TxnField.asset_receiver: Global.current_application_address(),
+                }
+            ),
+            InnerTxnBuilder.Submit()
+        ),
+        Seq(
+            InnerTxnBuilder.Begin(),
+            InnerTxnBuilder.SetFields(
+                {
+                    TxnField.type_enum: TxnType.AssetTransfer,
+                    TxnField.xfer_asset: App.globalGet(paiment_asa_id),
+                    TxnField.asset_receiver: Global.current_application_address(),
+                }
+            ),
+            InnerTxnBuilder.Submit()
+        ),
+        Approve()
+    )
+
+def on_fund_optin(note):
+    return Seq(
+        Assert(Txn.sender() == Global.creator_address()),
+        function_send_note(Int(CREATE_FEES), Bytes(note)),
+        Seq(
+            InnerTxnBuilder.Begin(),
+            InnerTxnBuilder.SetFields(
+                {
+                    TxnField.type_enum: TxnType.AssetTransfer,
+                    TxnField.xfer_asset: App.globalGet(asa_id),
+                    TxnField.asset_receiver: Global.current_application_address(),
+                }
+            ),
+            InnerTxnBuilder.Submit()
+        ),
+        Approve()
+    )
+
+
 def completion_reject():
     return [
         Or(
@@ -246,3 +343,98 @@ def completion_reject():
         ),
         Reject()
     ]
+
+
+@Subroutine(TealType.none)
+def function_send_nft_asa(account: Expr, amount: Expr) -> Expr:
+    return Seq(
+        InnerTxnBuilder.Begin(),
+        InnerTxnBuilder.SetFields(
+            {
+                TxnField.type_enum: TxnType.AssetTransfer,
+                TxnField.xfer_asset: App.globalGet(asa_id),
+                TxnField.asset_receiver: account,
+                TxnField.asset_amount: amount,
+                TxnField.fee: Global.min_txn_fee()
+            }
+        ),
+        InnerTxnBuilder.Submit()
+    )
+
+
+@Subroutine(TealType.none)
+def function_payment_asa(amount: Expr) -> Expr:
+    return Seq(
+        InnerTxnBuilder.Begin(),
+        InnerTxnBuilder.SetFields(
+            {
+                TxnField.type_enum: TxnType.AssetTransfer,
+                TxnField.xfer_asset: App.globalGet(paiment_asa_id),
+                TxnField.asset_receiver: Global.creator_address(),
+                TxnField.asset_amount: amount,
+                TxnField.fee: Global.min_txn_fee()
+            }
+        ),
+        InnerTxnBuilder.Submit(),
+    )
+
+
+@Subroutine(TealType.none)
+def function_asa_optout(asset_id) -> Expr:
+    return Seq(
+        InnerTxnBuilder.Begin(),
+        InnerTxnBuilder.SetFields(
+            {
+                TxnField.type_enum: TxnType.AssetTransfer,
+                TxnField.xfer_asset: asset_id,
+                TxnField.asset_close_to: Global.creator_address(),
+                TxnField.sender: Global.current_application_address(),
+            }
+        ),
+        InnerTxnBuilder.Submit(),
+    )
+
+@Subroutine(TealType.none)
+def function_optout_asa() -> Expr:
+    return Seq(
+        InnerTxnBuilder.Begin(),
+        InnerTxnBuilder.SetFields(
+            {
+                TxnField.type_enum: TxnType.AssetTransfer,
+                TxnField.xfer_asset: App.globalGet(asa_id),
+                TxnField.asset_close_to: Global.creator_address(),
+                TxnField.sender: Global.current_application_address(),
+            }
+        ),
+        InnerTxnBuilder.Submit(),
+    )
+
+
+@Subroutine(TealType.none)
+def function_optout_paiment_asa() -> Expr:
+    return Seq(
+        InnerTxnBuilder.Begin(),
+        InnerTxnBuilder.SetFields(
+            {
+                TxnField.type_enum: TxnType.AssetTransfer,
+                TxnField.xfer_asset: App.globalGet(paiment_asa_id),
+                TxnField.asset_close_to: Global.creator_address()
+            }
+        ),
+        InnerTxnBuilder.Submit(),
+    )
+
+
+@Subroutine(TealType.none)
+def function_optout_asa_payment() -> Expr:
+    return Seq(
+        InnerTxnBuilder.Begin(),
+        InnerTxnBuilder.SetFields(
+            {
+                TxnField.type_enum: TxnType.AssetTransfer,
+                TxnField.xfer_asset: App.globalGet(paiment_asa_id),
+                TxnField.asset_close_to: Global.creator_address()
+            }
+        ),
+        InnerTxnBuilder.Submit(),
+    )

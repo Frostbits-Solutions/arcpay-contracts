@@ -1,0 +1,3 @@
+from main_asa.auction_main_asa import contract_auction_main_asa
+from main_asa.dutch_main_asa import contract_dutch_main_asa
+from main_asa.sale_main_asa import contract_sale_main_asa
