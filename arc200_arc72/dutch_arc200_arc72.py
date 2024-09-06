@@ -17,12 +17,11 @@ def contract_dutch_arc200_arc72():
         App.globalPut(counter_party_address, Txn.application_args[7]),
         App.globalPut(counter_party_fees, Btoi(Txn.application_args[8])),
         App.globalPut(start_time_key, Global.latest_timestamp()),
-        App.globalPut(fees_address, Addr(FEES_ADDRESS)),
+        App.globalPut(fees_address, app_addr_from_id(Int(FEES_APP_ID))),
         Assert(App.globalGet(nft_max_price) > App.globalGet(nft_min_price)),
         Assert(App.globalGet(end_time_key) > App.globalGet(start_time_key)),
         App.globalPut(main_fees, Int(2)),
         App.globalPut(fees_app_id, Int(FEES_APP_ID)),
-        App.globalPut(note_address, Addr(NOTE_ADDRESS)),
         Approve(),
     )
 

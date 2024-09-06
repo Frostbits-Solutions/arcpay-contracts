@@ -14,10 +14,9 @@ def contract_sale_arc200_arc72():
         App.globalPut(arc200_app_address, Txn.application_args[4]),
         App.globalPut(counter_party_address, Txn.application_args[5]),
         App.globalPut(counter_party_fees, Btoi(Txn.application_args[6])),
-        App.globalPut(fees_address, Addr(FEES_ADDRESS)),
+        App.globalPut(fees_address, app_addr_from_id(Int(FEES_APP_ID))),
         App.globalPut(main_fees, Int(2)),
         App.globalPut(fees_app_id, Int(FEES_APP_ID)),
-        App.globalPut(note_address, Addr(NOTE_ADDRESS)),
         Approve(),
     )
 

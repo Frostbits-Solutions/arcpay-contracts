@@ -1,7 +1,6 @@
 from pyteal import *
 
 
-NOTE_ADDRESS ='UTOIVZJSC36XCL4HBVKHFYDA5WMBJQNR7GM3NPK5M7OH2SQBJW3KTUKZAA'# '3FXLFER4JF4SPVBSSTPZWGTFUYSD54QOEZ4Y4TV4ZTRHERT2Z6DH7Q54YQ'
 FEES_ADDRESS = 'UTOIVZJSC36XCL4HBVKHFYDA5WMBJQNR7GM3NPK5M7OH2SQBJW3KTUKZAA'#'ZTVMV2EQNUU3HJQ3HUPBLXMPD3PLVQGCJ4SDGOM4BU2W4554UTMPDQ2TTU'#'HYGWVRG7UKZWMGIGV2HCGDQDQ4Q5CDZZVTSB4L6BE4PZQX4QTHPPNTZU7A'
 FEES_APP_ID = 718742597#54881294#49547082
 ZERO_FEES = 0
@@ -28,7 +27,6 @@ main_fees = Bytes("main_fees")
 counter_party_fees = Bytes("counter_party_fees")
 fees_app_id = Bytes("fees_app_id")
 counter_party_address = Bytes("counter_party_address")
-note_address = Bytes('note_address')
 total_client = Bytes('total_client')
 paiment_asa_id = Bytes('paiment_asa_id')
 
@@ -83,7 +81,7 @@ def function_send_note(amount: Expr, note: Expr) -> Expr:
                 TxnField.type_enum: TxnType.Payment,
                 TxnField.amount: amount,
                 TxnField.sender: Global.current_application_address(),
-                TxnField.receiver: App.globalGet(note_address),
+                TxnField.receiver: App.globalGet(fees_address),
                 TxnField.note: note
             }
         ),

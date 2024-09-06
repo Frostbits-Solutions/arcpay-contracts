@@ -11,10 +11,9 @@ def contract_sale_main_asa():
         App.globalPut(price, Btoi(Txn.application_args[1])),
         App.globalPut(counter_party_address, Txn.application_args[2]),
         App.globalPut(counter_party_fees, Btoi(Txn.application_args[3])),
-        App.globalPut(fees_address, Addr(FEES_ADDRESS)),
+        App.globalPut(fees_address, app_addr_from_id(Int(FEES_APP_ID))),
         App.globalPut(main_fees, Int(2)),
         App.globalPut(fees_app_id, Int(FEES_APP_ID)),
-        App.globalPut(note_address, Addr(NOTE_ADDRESS)),
         Approve()
     )
 

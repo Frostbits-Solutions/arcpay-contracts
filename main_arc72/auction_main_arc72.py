@@ -26,13 +26,12 @@ def contract_auction_main_arc72():
         App.globalPut(end_time_key, Btoi(Txn.application_args[3])),
         App.globalPut(counter_party_address, Txn.application_args[4]),
         App.globalPut(counter_party_fees, Btoi(Txn.application_args[5])),
-        App.globalPut(fees_address, Addr(FEES_ADDRESS)),
+        App.globalPut(fees_address, app_addr_from_id(Int(FEES_APP_ID))),
         App.globalPut(bid_account, Global.zero_address()),
         App.globalPut(late_bid_delay, Int(600)),
         App.globalPut(bid_amount, Int(0)),
         App.globalPut(main_fees, Int(2)),
         App.globalPut(fees_app_id, Int(FEES_APP_ID)),
-        App.globalPut(note_address, Addr(NOTE_ADDRESS)),
         Approve(),
     )
 
