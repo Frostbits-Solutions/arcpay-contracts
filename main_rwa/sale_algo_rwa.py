@@ -1,11 +1,10 @@
-from pyteal import *
-from subroutine import FEES_ADDRESS, FEES_APP_ID, NOTE_ADDRESS
-from subroutine import fees_address, price, name, description, main_fees, counter_party_fees, fees_app_id, counter_party_address, note_address
-from subroutine import function_send_note, function_close_app, function_payment, function_contract_fees
-from subroutine import on_update, on_fund, on_delete, completion_reject
+from subroutine import *
+from main_rwa.note_signature import note_signature
+
+note_type = "sale"
 
 
-def approval_program():
+def contract_sale_algo_rwa():
 
     on_create = Seq(
         App.globalPut(price, Btoi(Txn.application_args[0])),
@@ -30,6 +29,7 @@ def approval_program():
             )
         ),
         Seq(
+            function_send_note(Int(0), Bytes(f"{note_type},buy,{note_signature}")),
             function_contract_fees(
                 Div(
                     Mul(
@@ -64,7 +64,6 @@ def approval_program():
                     )
                 )
             ),
-            function_send_note(Int(0), Bytes("sale,buy,1/rwa")),
             function_close_app(),
             Approve()
         ),
@@ -73,9 +72,9 @@ def approval_program():
 
     program = Cond(
         [Txn.application_id() == Int(0), on_create],
-        [Txn.on_completion() == OnComplete.DeleteApplication, on_delete("sale,cancel,1/rwa")],
-        [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("fund")), on_fund("sale,create,1/rwa")],
-        [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("update_price")), on_update("sale,update,1/rwa")],
+        [Txn.on_completion() == OnComplete.DeleteApplication, on_delete(f"{note_type},cancel,{note_signature}")],
+        [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("fund")), on_fund(f"{note_type},create,{note_signature}")],
+        [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("update_price")), on_update(f"{note_type},update,{note_signature}")],
         [And(Txn.on_completion() == OnComplete.NoOp, Txn.application_args[0] == Bytes("buy")), on_buy],
         completion_reject()
     )
