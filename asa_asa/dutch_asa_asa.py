@@ -55,7 +55,7 @@ def contract_dutch_asa_asa():
             )
         ),
         Seq(
-            function_send_note(Int(PURCHASE_FEES), Bytes(f"{note_type},buy,{note_signature}")),
+            function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
             function_contract_fees_asa(
                 Div(
                     Mul(

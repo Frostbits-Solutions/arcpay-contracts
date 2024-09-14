@@ -69,7 +69,7 @@ def contract_auction_main_asa():
                 App.globalGet(end_time_key) <= Global.latest_timestamp()
             )
         ),
-        function_send_note(Int(PURCHASE_FEES), Bytes(f"{note_type},close,{note_signature}")),
+        function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},close,{note_signature}")),
         function_contract_fees(
             Div(
                 Mul(
