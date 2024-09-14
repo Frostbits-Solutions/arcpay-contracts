@@ -12,15 +12,9 @@ def contract_dutch_asa_asa():
         App.globalPut(nft_min_price, Btoi(Txn.application_args[2])),
         App.globalPut(end_time_key, Btoi(Txn.application_args[3])),
         App.globalPut(counter_party_address, Txn.application_args[4]),
-        App.globalPut(counter_party_fees, Btoi(Txn.application_args[5])),
-        App.globalPut(paiment_asa_id, Btoi(Txn.application_args[6])),
-        App.globalPut(start_time_key, Global.latest_timestamp()),
-        App.globalPut(fees_address, app_addr_from_id(Int(FEES_APP_ID))),
-        Assert(App.globalGet(nft_max_price) > App.globalGet(nft_min_price)),
-        Assert(App.globalGet(end_time_key) > App.globalGet(start_time_key)),
-        App.globalPut(main_fees, Int(2)),
-        App.globalPut(fees_app_id, Int(FEES_APP_ID)),
-        Approve(),
+        App.globalPut(paiment_asa_id, Btoi(Txn.application_args[5])),
+        initialisation_dutch(),
+        initialisation_smartcontract()
     )
 
     on_buy = Seq(
@@ -55,6 +49,7 @@ def contract_dutch_asa_asa():
             )
         ),
         Seq(
+            read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
             function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
             function_contract_fees_asa(
                 Div(
@@ -62,7 +57,7 @@ def contract_dutch_asa_asa():
                         Gtxn[Txn.group_index() - Int(1)].asset_amount(),
                         Add(
                             App.globalGet(main_fees),
-                            App.globalGet(counter_party_fees)
+                            read_fees.value()
                         )
                     ),
                     Int(100)
@@ -70,7 +65,7 @@ def contract_dutch_asa_asa():
                 Div(
                     Mul(
                         Gtxn[Txn.group_index() - Int(1)].asset_amount(),
-                        App.globalGet(counter_party_fees)
+                        read_fees.value()
                     ),
                     Int(100)
                 )
@@ -83,7 +78,7 @@ def contract_dutch_asa_asa():
                             Gtxn[Txn.group_index() - Int(1)].asset_amount(),
                             Add(
                                 App.globalGet(main_fees),
-                                App.globalGet(counter_party_fees)
+                                read_fees.value()
                             )
                         ),
                         Int(100)

@@ -13,21 +13,14 @@ def contract_auction_arc200_arc72():
         )
 
     on_create = Seq(
-        App.globalPut(nft_app_id, Btoi(Txn.application_args[0])),
-        App.globalPut(nft_id, Txn.application_args[1]),
+        initialisation_arc72(),
         App.globalPut(nft_min_price, Btoi(Txn.application_args[2])),
         App.globalPut(end_time_key, Btoi(Txn.application_args[3])),
         App.globalPut(arc200_app_id, Btoi(Txn.application_args[4])),
-        App.globalPut(arc200_app_address, Txn.application_args[5]),
-        App.globalPut(counter_party_address, Txn.application_args[6]),
-        App.globalPut(counter_party_fees, Btoi(Txn.application_args[7])),
-        App.globalPut(fees_address, app_addr_from_id(Int(FEES_APP_ID))),
-        App.globalPut(bid_account, Global.zero_address()),
-        App.globalPut(late_bid_delay, Int(600)),
-        App.globalPut(bid_amount, Int(0)),
-        App.globalPut(main_fees, Int(2)),
-        App.globalPut(fees_app_id, Int(FEES_APP_ID)),
-        Approve(),
+        App.globalPut(arc200_app_address, app_addr_from_id(App.globalGet(arc200_app_id))),
+        App.globalPut(counter_party_address, Txn.application_args[5]),
+        initialisation_auction(),
+        initialisation_smartcontract()
     )
 
     on_bid = Seq(
@@ -64,6 +57,7 @@ def contract_auction_arc200_arc72():
                 App.globalGet(end_time_key) <= Global.latest_timestamp()
             )
         ),
+        read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
         function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},close,{note_signature}")),
         function_contract_fees_arc200(
             Div(
@@ -71,7 +65,7 @@ def contract_auction_arc200_arc72():
                     App.globalGet(bid_amount),
                     Add(
                         App.globalGet(main_fees),
-                        App.globalGet(counter_party_fees)
+                        read_fees.value()
                     )
                 ),
                 Int(100)
@@ -79,7 +73,7 @@ def contract_auction_arc200_arc72():
             Div(
                 Mul(
                     App.globalGet(bid_amount),
-                    App.globalGet(counter_party_fees)
+                    read_fees.value()
                 ),
                 Int(100)
             )
@@ -93,7 +87,7 @@ def contract_auction_arc200_arc72():
                         App.globalGet(bid_amount),
                         Add(
                             App.globalGet(main_fees),
-                            App.globalGet(counter_party_fees)
+                            read_fees.value()
                         )
                     ),
                     Int(100)
