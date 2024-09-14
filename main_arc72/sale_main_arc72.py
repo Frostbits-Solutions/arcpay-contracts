@@ -9,8 +9,7 @@ def contract_sale_main_arc72():
     on_create = Seq(
         initialisation_arc72(),
         App.globalPut(price, Btoi(Txn.application_args[2])),
-        App.globalPut(counter_party_address, Txn.application_args[3]),
-        initialisation_smartcontract()
+        initialisation_smartcontract(3)
     )
 
     on_buy = Seq(

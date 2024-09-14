@@ -10,8 +10,7 @@ def contract_sale_arc200_rwa():
         initialisation_rwa(),
         App.globalPut(arc200_app_id, Btoi(Txn.application_args[3])),
         App.globalPut(arc200_app_address, app_addr_from_id(App.globalGet(arc200_app_id))),
-        App.globalPut(counter_party_address, Txn.application_args[4]),
-        initialisation_smartcontract()
+        initialisation_smartcontract(4)
     )
 
     on_buy = Seq(

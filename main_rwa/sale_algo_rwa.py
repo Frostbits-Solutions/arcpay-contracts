@@ -8,8 +8,7 @@ def contract_sale_algo_rwa():
 
     on_create = Seq(
         initialisation_rwa(),
-        App.globalPut(counter_party_address, Txn.application_args[3]),
-        initialisation_smartcontract()
+        initialisation_smartcontract(3)
     )
 
     on_buy = Seq(

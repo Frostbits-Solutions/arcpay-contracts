@@ -393,8 +393,9 @@ def function_asa_optout(asset_id) -> Expr:
     )
 
 
-def initialisation_smartcontract():
+def initialisation_smartcontract(index):
     return Seq(
+        App.globalPut(counter_party_address, Txn.application_args[index]),
         App.globalPut(fees_app_id, Int(FEES_APP_ID)),
         App.globalPut(fees_address, app_addr_from_id(App.globalGet(fees_app_id))),
         App.globalPut(main_fees, Int(2)),
