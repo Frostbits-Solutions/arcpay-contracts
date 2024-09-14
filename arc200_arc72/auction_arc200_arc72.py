@@ -18,9 +18,8 @@ def contract_auction_arc200_arc72():
         App.globalPut(end_time_key, Btoi(Txn.application_args[3])),
         App.globalPut(arc200_app_id, Btoi(Txn.application_args[4])),
         App.globalPut(arc200_app_address, app_addr_from_id(App.globalGet(arc200_app_id))),
-        App.globalPut(counter_party_address, Txn.application_args[5]),
         initialisation_auction(),
-        initialisation_smartcontract()
+        initialisation_smartcontract(5)
     )
 
     on_bid = Seq(

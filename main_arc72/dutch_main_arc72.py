@@ -11,9 +11,8 @@ def contract_dutch_main_arc72():
         App.globalPut(nft_max_price, Btoi(Txn.application_args[2])),
         App.globalPut(nft_min_price, Btoi(Txn.application_args[3])),
         App.globalPut(end_time_key, Btoi(Txn.application_args[4])),
-        App.globalPut(counter_party_address, Txn.application_args[5]),
         initialisation_dutch(),
-        initialisation_smartcontract()
+        initialisation_smartcontract(5)
     )
 
     on_buy = Seq(

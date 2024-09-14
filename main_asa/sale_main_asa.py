@@ -9,8 +9,7 @@ def contract_sale_main_asa():
     on_create = Seq(
         App.globalPut(asa_id, Btoi(Txn.application_args[0])),
         App.globalPut(price, Btoi(Txn.application_args[1])),
-        App.globalPut(counter_party_address, Txn.application_args[2]),
-        initialisation_smartcontract()
+        initialisation_smartcontract(2)
     )
 
     on_buy = Seq(

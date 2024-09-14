@@ -23,9 +23,8 @@ def contract_auction_main_asa():
         App.globalPut(asa_id, Btoi(Txn.application_args[0])),
         App.globalPut(nft_min_price, Btoi(Txn.application_args[1])),
         App.globalPut(end_time_key, Btoi(Txn.application_args[2])),
-        App.globalPut(counter_party_address, Txn.application_args[3]),
         initialisation_auction(),
-        initialisation_smartcontract()
+        initialisation_smartcontract(3)
     )
 
     on_bid = Seq(

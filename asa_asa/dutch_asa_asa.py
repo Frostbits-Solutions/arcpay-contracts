@@ -11,10 +11,9 @@ def contract_dutch_asa_asa():
         App.globalPut(nft_max_price, Btoi(Txn.application_args[1])),
         App.globalPut(nft_min_price, Btoi(Txn.application_args[2])),
         App.globalPut(end_time_key, Btoi(Txn.application_args[3])),
-        App.globalPut(counter_party_address, Txn.application_args[4]),
         App.globalPut(paiment_asa_id, Btoi(Txn.application_args[5])),
         initialisation_dutch(),
-        initialisation_smartcontract()
+        initialisation_smartcontract(4)
     )
 
     on_buy = Seq(

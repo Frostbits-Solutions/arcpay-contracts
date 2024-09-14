@@ -13,9 +13,8 @@ def contract_dutch_arc200_arc72():
         App.globalPut(end_time_key, Btoi(Txn.application_args[4])),
         App.globalPut(arc200_app_id, Btoi(Txn.application_args[5])),
         App.globalPut(arc200_app_address, app_addr_from_id(App.globalGet(arc200_app_id))),
-        App.globalPut(counter_party_address, Txn.application_args[6]),
         initialisation_dutch(),
-        initialisation_smartcontract()
+        initialisation_smartcontract(6)
     )
 
     on_buy = Seq(
