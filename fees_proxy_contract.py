@@ -122,7 +122,7 @@ def approval_program():
         client_holding_asa,
         If(
             And(
-                # Test if the payment is an asset transfer : send the proper amount of ASA
+                # Test if the payment is an asset transfer
                 Gtxn[Txn.group_index() - Int(1)].type_enum() == TxnType.AssetTransfer,
                 # Check the client exist
                 App.globalGet(Txn.application_args[1]) > Int(0),
@@ -140,6 +140,40 @@ def approval_program():
                     TxnField.asset_receiver: Txn.application_args[1],
                     TxnField.asset_amount: Btoi(Txn.application_args[2]),
                     TxnField.fee: Global.min_txn_fee()
+                }
+            ),
+            InnerTxnBuilder.Submit()
+        ),
+        Approve()
+    )
+
+    # Manage arc200 fees
+    # TODO add check if client as ARC200
+    manage_arc200_fees = Seq(
+        If(
+            And(
+                # Check the client exist
+                App.globalGet(Txn.application_args[1]) > Int(0),
+                # Test if the payment is an application call for an arc200
+                Gtxn[Txn.group_index() - Int(1)].type_enum() == TxnType.ApplicationCall,
+                Gtxn[Txn.group_index() - Int(1)].application_args[0] == Bytes("base16", "da7025b9"),
+                # Test it is sent to our address
+                Gtxn[Txn.group_index() - Int(1)].application_args[1] == Global.current_application_address(),
+                # # Check the amount send in tx is greater than the fees to add
+                Btoi(Extract(Gtxn[Txn.group_index() - Int(1)].application_args[2], Int(24), Int(8))) > Btoi(Txn.application_args[2]),
+            )
+        ).Then(
+            InnerTxnBuilder.Begin(),
+            InnerTxnBuilder.SetFields(
+                {
+                    TxnField.type_enum: TxnType.ApplicationCall,
+                    TxnField.application_id: Gtxn[Txn.group_index() - Int(1)].application_id(),
+                    TxnField.on_completion: OnComplete.NoOp,
+                    TxnField.application_args: [
+                        Bytes("base16", "da7025b9"),
+                        Txn.application_args[1],
+                        Concat(BytesZero(Int(24)), Txn.application_args[2])
+                    ]
                 }
             ),
             InnerTxnBuilder.Submit()
@@ -232,6 +266,7 @@ def approval_program():
         [Txn.application_args[0] == Bytes("del_asa"), del_asa],
         [Txn.application_args[0] == Bytes("manage_network_fees"), manage_network_fees],
         [Txn.application_args[0] == Bytes("manage_asa_fees"), manage_asa_fees],
+        [Txn.application_args[0] == Bytes("manage_arc200_fees"), manage_arc200_fees],
         [Txn.application_args[0] == Bytes("claim_network_fees"), claim_network_fees],
         [Txn.application_args[0] == Bytes("claim_asa_fees"), claim_asa_fees],
         [Txn.on_completion() == OnComplete.DeleteApplication, del_app]
