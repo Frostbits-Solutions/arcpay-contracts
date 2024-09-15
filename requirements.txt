@@ -1,0 +1,4 @@
+py-algorand-sdk
+pyteal
+supabase
+python-dotenv

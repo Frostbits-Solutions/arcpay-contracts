@@ -1,6 +1,9 @@
+import os
+import datetime 
 from algosdk.v2client.algod import AlgodClient
 from pyteal import compileTeal, Mode
 from supabase import create_client
+from dotenv import load_dotenv
 
 from arc200_arc72 import contract_auction_arc200_arc72, contract_dutch_arc200_arc72, contract_sale_arc200_arc72
 from arc200_rwa import contract_sale_arc200_rwa
@@ -10,62 +13,67 @@ from main_arc72 import contract_auction_main_arc72, contract_dutch_main_arc72, c
 from main_asa import contract_auction_main_asa, contract_dutch_main_asa, contract_sale_main_asa
 from main_rwa import contract_sale_algo_rwa
 
+load_dotenv() 
 
-url = ''
-key = ''
+url = os.environ.get('SUPABASE_URL')
+key = os.environ.get('SUPABASE_KEY')
 
 client_supabase = create_client(url, key)
 
-
 dico_tag = {
-    'algo:testnet:algo_rwa_sale_approval:latest': contract_sale_algo_rwa,
-
-    'algo:testnet:asa_rwa_sale_approval:latest': contract_sale_asa_rwa,
-
-    'algo:testnet:algo_asa_auction_approval:latest': contract_auction_main_asa,
-    'algo:testnet:algo_asa_dutch_approval:latest': contract_dutch_main_asa,
-    'algo:testnet:algo_asa_sale_approval:latest': contract_sale_main_asa,
-
-    'algo:testnet:asa_asa_auction_approval:latest': contract_auction_asa_asa,
-    'algo:testnet:asa_asa_dutch_approval:latest': contract_dutch_asa_asa,
-    'algo:testnet:asa_asa_sale_approval:latest': contract_sale_asa_asa,
-
-    'voi:testnet:voi_arc72_auction_approval:latest': contract_auction_main_arc72,
-    'voi:testnet:voi_arc72_dutch_approval:latest': contract_dutch_main_arc72,
-    'voi:testnet:voi_arc72_sale_approval:latest': contract_sale_main_arc72,
-
-    'voi:testnet:arc200_arc72_auction_approval:latest': contract_auction_arc200_arc72,
-    'voi:testnet:arc200_arc72_dutch_approval:latest': contract_dutch_arc200_arc72,
-    'voi:testnet:arc200_arc72_sale_approval:latest': contract_sale_arc200_arc72,
-
-    'voi:testnet:arc200_rwa_sale_approval:latest': contract_sale_arc200_rwa,
+    'algo_asa_auction_approval': contract_auction_main_asa,
+    'algo_asa_dutch_approval': contract_dutch_main_asa,
+    'algo_asa_sale_approval': contract_sale_main_asa,
+    'algo_offchain_sale_approval': contract_sale_algo_rwa,
+    'asa_asa_auction_approval': contract_auction_asa_asa,
+    'asa_asa_dutch_approval': contract_dutch_asa_asa,
+    'asa_asa_sale_approval': contract_sale_asa_asa,
+    'asa_offchain_sale_approval': contract_sale_asa_rwa,
+    'voi_arc72_auction_approval': contract_auction_main_arc72,
+    'voi_arc72_dutch_approval': contract_dutch_main_arc72,
+    'voi_arc72_sale_approval': contract_sale_main_arc72,
+    'voi_offchain_sale_approval': contract_sale_algo_rwa,
+    'arc200_arc72_auction_approval': contract_auction_arc200_arc72,
+    'arc200_arc72_dutch_approval': contract_dutch_arc200_arc72,
+    'arc200_arc72_sale_approval': contract_sale_arc200_arc72,
+    'arc200_offchain_sale_approval': contract_sale_arc200_rwa,
 }
 
+def compile_contract(tag):
+    compiled = compileTeal(dico_tag[tag](), mode=Mode.Application, version=10)
+    algod_token_tx = ""
+    headers_tx = {"X-Algo-API-Token": algod_token_tx}
+    client = AlgodClient(
+        algod_token=algod_token_tx,
+        algod_address="https://testnet-api.voi.nodly.io:443",
+        headers=headers_tx,
+    )
+    return client.compile(compiled)['result']
+
+
 if __name__ == "__main__":
-    list_to_proces = list(dico_tag.keys())
-    # list_to_proces = [el for el in list_to_proces if 'arc72' in el]
-    # list_to_proces = ['voi:testnet:voi_arc72_dutch_approval:latest']
-    for to_process in list_to_proces:
-        print(to_process)
-        compiled = compileTeal(dico_tag[to_process](), mode=Mode.Application, version=10)
-        algod_token_tx = ""
-        headers_tx = {"X-Algo-API-Token": algod_token_tx}
-        client = AlgodClient(
-            algod_token=algod_token_tx,
-            algod_address="https://testnet-api.voi.nodly.io:443",
-            headers=headers_tx,
-        )
-        final_result = client.compile(compiled)['result']
-        a = client_supabase.table('contracts_tags')
-        check_contract = client_supabase.table('contracts').select('*').eq('byte_code', final_result).execute()
-        comment = 'fund_arc72'
+    tags = list(dico_tag.keys())
+    if os.environ.get('TAG_FILTER') is not None:
+        tags = [el for el in tags if os.environ.get('TAG_FILTER') in el]
+
+    # If version is specified, use it, otherwise get the latest version
+    if os.environ.get('VERSION') is not None:
+        version = os.environ.get('VERSION')
+    else:
+        version = client_supabase.table('sdk_versions').select('id').order('created_at', ascending=False).limit(1).execute().data[0]['id']
+    
+    for tag in tags:
+        print(f"Processing {tag}")
+        byte_code = compile_contract(tag)
+        comment = os.environ.get('COMMENT', datetime.datetime.now())
+        check_contract = client_supabase.table('contracts').select('*').eq('byte_code', byte_code).execute()
         if len(check_contract.data) == 1:
             new_id = check_contract.data[0]['id']
         elif len(check_contract.data) == 0:
-            result_contract = client_supabase.table('contracts').insert({"byte_code": final_result, 'name': to_process.split(':')[2] + comment}).execute()
+            result_contract = client_supabase.table('contracts').insert({"byte_code": byte_code, 'name': tag + comment}).execute()
             data_result_contract = result_contract.data
             new_id = result_contract.data[0]['id']
         else:
-            raise '2 data for the bytecode'
-        client_supabase.table('contracts_tags').update({'contract_id': new_id}).eq('tag', to_process).execute()
+            raise Exception('Contract duplicated in database: the contract should be unique but found multiple entries.')
+        client_supabase.table('contracts_tags_association').upsert({'chain': os.environ.get('CHAIN'), 'tag': tag, 'version': version, 'contract': new_id}).execute()
 
