@@ -13,8 +13,7 @@ from main_arc72 import contract_auction_main_arc72, contract_dutch_main_arc72, c
 from main_asa import contract_auction_main_asa, contract_dutch_main_asa, contract_sale_main_asa
 from main_rwa import contract_sale_algo_rwa
 
-if os.environ.get('SUPABASE_URL') is None:
-    load_dotenv() 
+load_dotenv() 
 
 url = os.environ.get('SUPABASE_URL')
 key = os.environ.get('SUPABASE_KEY')
@@ -54,11 +53,11 @@ def compile_contract(tag):
 
 if __name__ == "__main__":
     tags = list(dico_tag.keys())
-    if os.environ.get('TAG_FILTER') is not None:
+    if os.environ.get('TAG_FILTER', '') != '':
         tags = [el for el in tags if os.environ.get('TAG_FILTER') in el]
 
     # If version is specified, use it, otherwise get the latest version
-    if os.environ.get('VERSION') is not None:
+    if os.environ.get('VERSION', '') != '':
         version = os.environ.get('VERSION')
     else:
         version = client_supabase.table('sdk_versions').select('id').order('created_at', ascending=False).limit(1).execute().data[0]['id']
@@ -66,13 +65,12 @@ if __name__ == "__main__":
     for tag in tags:
         print(f"Processing {tag}")
         byte_code = compile_contract(tag)
-        comment = os.environ.get('COMMENT', datetime.datetime.now())
+        comment = os.environ.get('COMMENT')
         check_contract = client_supabase.table('contracts').select('*').eq('byte_code', byte_code).execute()
         if len(check_contract.data) == 1:
             new_id = check_contract.data[0]['id']
         elif len(check_contract.data) == 0:
             result_contract = client_supabase.table('contracts').insert({"byte_code": byte_code, 'name': tag + comment}).execute()
-            data_result_contract = result_contract.data
             new_id = result_contract.data[0]['id']
         else:
             raise Exception('Contract duplicated in database: the contract should be unique but found multiple entries.')
