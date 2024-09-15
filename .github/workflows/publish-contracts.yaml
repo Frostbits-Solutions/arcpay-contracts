@@ -7,20 +7,20 @@ on:
         type: environment
       network:
         type: choice
-        description: 'Select the network to deploy to'
+        description: 'Select the network to deploy to.'
         required: true
         options: 
         - 'testnet'
         - 'mainnet'
       tag_filter:
         type: string
-        description: 'Filter tags to deploy'
+        description: 'Filter tags to deploy.'
       version:
         type: string
-        description: 'Target SDK version. Format is <major>.<minor>.<patch> eg. 0.0.8. If left empty, the latest version will be updated.'
+        description: 'Target SDK version.'
       comment:
         type: string
-        description: 'Comment for the release'
+        description: 'Comment for the release.'
 
 jobs:
   publish:
