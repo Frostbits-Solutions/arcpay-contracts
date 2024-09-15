@@ -5,15 +5,13 @@ on:
       environment:
         required: true
         type: environment
-      chain:
+      network:
         type: choice
-        description: 'Select the chain to deploy to'
+        description: 'Select the network to deploy to'
         required: true
         options: 
-        - 'algo:mainnet'
-        - 'algo:testnet'
-        - 'voi:testnet'
-        - 'voi:mainnet'
+        - 'testnet'
+        - 'mainnet'
       tag_filter:
         type: string
         description: 'Filter tags to deploy'
@@ -47,4 +45,4 @@ jobs:
         TAG_FILTER: ${{ github.event.inputs.tag_filter }}
         VERSION: ${{ github.event.inputs.version }}
         COMMENT: ${{ github.event.inputs.comment }}
-        CHAIN: ${{ github.event.inputs.chain }} 
+        NETWORK: ${{ github.event.inputs.network }} 
