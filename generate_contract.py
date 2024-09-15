@@ -13,7 +13,8 @@ from main_arc72 import contract_auction_main_arc72, contract_dutch_main_arc72, c
 from main_asa import contract_auction_main_asa, contract_dutch_main_asa, contract_sale_main_asa
 from main_rwa import contract_sale_algo_rwa
 
-load_dotenv() 
+if os.environ.get('SUPABASE_URL') is None:
+    load_dotenv() 
 
 url = os.environ.get('SUPABASE_URL')
 key = os.environ.get('SUPABASE_KEY')
