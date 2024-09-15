@@ -23,15 +23,8 @@ def contract_auction_main_asa():
         App.globalPut(asa_id, Btoi(Txn.application_args[0])),
         App.globalPut(nft_min_price, Btoi(Txn.application_args[1])),
         App.globalPut(end_time_key, Btoi(Txn.application_args[2])),
-        App.globalPut(counter_party_address, Txn.application_args[3]),
-        App.globalPut(counter_party_fees, Btoi(Txn.application_args[4])),
-        App.globalPut(fees_address, app_addr_from_id(Int(FEES_APP_ID))),
-        App.globalPut(bid_account, Global.zero_address()),
-        App.globalPut(late_bid_delay, Int(600)),
-        App.globalPut(bid_amount, Int(0)),
-        App.globalPut(main_fees, Int(2)),
-        App.globalPut(fees_app_id, Int(FEES_APP_ID)),
-        Approve(),
+        initialisation_auction(),
+        initialisation_smartcontract(3)
     )
 
     on_bid = Seq(
@@ -69,6 +62,7 @@ def contract_auction_main_asa():
                 App.globalGet(end_time_key) <= Global.latest_timestamp()
             )
         ),
+        read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
         function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},close,{note_signature}")),
         function_contract_fees(
             Div(
@@ -76,7 +70,7 @@ def contract_auction_main_asa():
                     App.globalGet(bid_amount),
                     Add(
                         App.globalGet(main_fees),
-                        App.globalGet(counter_party_fees)
+                        read_fees.value()
                     )
                 ),
                 Int(100)
@@ -84,7 +78,7 @@ def contract_auction_main_asa():
             Div(
                 Mul(
                     App.globalGet(bid_amount),
-                    App.globalGet(counter_party_fees)
+                    read_fees.value()
                 ),
                 Int(100)
             )
@@ -97,7 +91,7 @@ def contract_auction_main_asa():
                         App.globalGet(bid_amount),
                         Add(
                             App.globalGet(main_fees),
-                            App.globalGet(counter_party_fees)
+                            read_fees.value()
                         )
                     ),
                     Int(100)

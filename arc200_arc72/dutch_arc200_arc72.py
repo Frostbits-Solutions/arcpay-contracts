@@ -7,22 +7,14 @@ note_type = "dutch"
 def contract_dutch_arc200_arc72():
 
     on_create = Seq(
-        App.globalPut(nft_app_id, Btoi(Txn.application_args[0])),
-        App.globalPut(nft_id, Txn.application_args[1]),
+        initialisation_arc72(),
         App.globalPut(nft_max_price, Btoi(Txn.application_args[2])),
         App.globalPut(nft_min_price, Btoi(Txn.application_args[3])),
         App.globalPut(end_time_key, Btoi(Txn.application_args[4])),
         App.globalPut(arc200_app_id, Btoi(Txn.application_args[5])),
-        App.globalPut(arc200_app_address, Txn.application_args[6]),
-        App.globalPut(counter_party_address, Txn.application_args[7]),
-        App.globalPut(counter_party_fees, Btoi(Txn.application_args[8])),
-        App.globalPut(start_time_key, Global.latest_timestamp()),
-        App.globalPut(fees_address, app_addr_from_id(Int(FEES_APP_ID))),
-        Assert(App.globalGet(nft_max_price) > App.globalGet(nft_min_price)),
-        Assert(App.globalGet(end_time_key) > App.globalGet(start_time_key)),
-        App.globalPut(main_fees, Int(2)),
-        App.globalPut(fees_app_id, Int(FEES_APP_ID)),
-        Approve(),
+        App.globalPut(arc200_app_address, app_addr_from_id(App.globalGet(arc200_app_id))),
+        initialisation_dutch(),
+        initialisation_smartcontract(6)
     )
 
     on_buy = Seq(
@@ -53,6 +45,7 @@ def contract_dutch_arc200_arc72():
             )
         ),
         Seq(
+            read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
             function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
             function_contract_fees_arc200(
                 Div(
@@ -60,7 +53,7 @@ def contract_dutch_arc200_arc72():
                         Btoi(Txn.application_args[1]),
                         Add(
                             App.globalGet(main_fees),
-                            App.globalGet(counter_party_fees)
+                            read_fees.value()
                         )
                     ),
                     Int(100)
@@ -68,7 +61,7 @@ def contract_dutch_arc200_arc72():
                 Div(
                     Mul(
                         Btoi(Txn.application_args[1]),
-                        App.globalGet(counter_party_fees)
+                        read_fees.value()
                     ),
                     Int(100)
                 )
@@ -82,7 +75,7 @@ def contract_dutch_arc200_arc72():
                             Btoi(Txn.application_args[1]),
                             Add(
                                 App.globalGet(main_fees),
-                                App.globalGet(counter_party_fees)
+                                read_fees.value()
                             )
                         ),
                         Int(100)

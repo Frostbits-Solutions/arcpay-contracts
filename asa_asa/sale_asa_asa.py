@@ -9,13 +9,8 @@ def contract_sale_asa_asa():
     on_create = Seq(
         App.globalPut(asa_id, Btoi(Txn.application_args[0])),
         App.globalPut(price, Btoi(Txn.application_args[1])),
-        App.globalPut(counter_party_address, Txn.application_args[2]),
-        App.globalPut(counter_party_fees, Btoi(Txn.application_args[3])),
-        App.globalPut(paiment_asa_id, Btoi(Txn.application_args[4])),
-        App.globalPut(fees_address, app_addr_from_id(Int(FEES_APP_ID))),
-        App.globalPut(main_fees, Int(2)),
-        App.globalPut(fees_app_id, Int(FEES_APP_ID)),
-        Approve()
+        App.globalPut(paiment_asa_id, Btoi(Txn.application_args[2])),
+        initialisation_smartcontract(3)
     )
 
     on_buy = Seq(
@@ -29,6 +24,7 @@ def contract_sale_asa_asa():
             )
         ),
         Seq(
+            read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
             function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
             function_contract_fees_asa(
                 Div(
@@ -36,7 +32,7 @@ def contract_sale_asa_asa():
                         App.globalGet(price),
                         Add(
                             App.globalGet(main_fees),
-                            App.globalGet(counter_party_fees)
+                            read_fees.value()
                         )
                     ),
                     Int(100)
@@ -44,7 +40,7 @@ def contract_sale_asa_asa():
                 Div(
                     Mul(
                         App.globalGet(price),
-                        App.globalGet(counter_party_fees)
+                        read_fees.value()
                     ),
                     Int(100)
                 )
@@ -57,7 +53,7 @@ def contract_sale_asa_asa():
                             App.globalGet(price),
                             Add(
                                 App.globalGet(main_fees),
-                                App.globalGet(counter_party_fees)
+                                read_fees.value()
                             )
                         ),
                         Int(100)

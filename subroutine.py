@@ -25,7 +25,6 @@ late_bid_delay = Bytes("late_bid_delay")
 bid_account = Bytes("bid_account")
 bid_amount = Bytes("bid_amount")
 main_fees = Bytes("main_fees")
-counter_party_fees = Bytes("counter_party_fees")
 fees_app_id = Bytes("fees_app_id")
 counter_party_address = Bytes("counter_party_address")
 total_client = Bytes('total_client')
@@ -391,4 +390,45 @@ def function_asa_optout(asset_id) -> Expr:
             }
         ),
         InnerTxnBuilder.Submit(),
+    )
+
+
+def initialisation_smartcontract(index):
+    return Seq(
+        App.globalPut(counter_party_address, Txn.application_args[index]),
+        App.globalPut(fees_app_id, Int(FEES_APP_ID)),
+        App.globalPut(fees_address, app_addr_from_id(App.globalGet(fees_app_id))),
+        App.globalPut(main_fees, Int(2)),
+        Approve(),
+    )
+
+
+def initialisation_auction():
+    return Seq(
+        App.globalPut(bid_account, Global.zero_address()),
+        App.globalPut(late_bid_delay, Int(600)),
+        App.globalPut(bid_amount, Int(0)),
+    )
+
+
+def initialisation_dutch():
+    return Seq(
+        App.globalPut(start_time_key, Global.latest_timestamp()),
+        Assert(App.globalGet(nft_max_price) > App.globalGet(nft_min_price)),
+        Assert(App.globalGet(end_time_key) > App.globalGet(start_time_key)),
+    )
+
+
+def initialisation_rwa():
+    return Seq(
+        App.globalPut(price, Btoi(Txn.application_args[0])),
+        App.globalPut(name, Txn.application_args[1]),
+        App.globalPut(description, Txn.application_args[2]),
+    )
+
+
+def initialisation_arc72():
+    return Seq(
+        App.globalPut(nft_app_id, Btoi(Txn.application_args[0])),
+        App.globalPut(nft_id, Txn.application_args[1]),
     )
