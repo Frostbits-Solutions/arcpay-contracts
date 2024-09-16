@@ -98,6 +98,7 @@ def contract_auction_main_arc72():
                 )
             )
         ),
+        function_fund_arc(nft_app_address),
         function_transfer_arc72(App.globalGet(bid_account)),
         function_close_app(),
         Approve()

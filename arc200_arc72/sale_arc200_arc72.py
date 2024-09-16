@@ -37,7 +37,7 @@ def contract_sale_arc200_arc72():
                     Int(100)
                 )
             ),
-            function_fund_arc200(),
+            function_fund_arc(arc200_app_address),
             function_transfer_arc200(
                 Minus(
                     App.globalGet(price),
@@ -54,6 +54,7 @@ def contract_sale_arc200_arc72():
                 ),
                 Global.creator_address()
             ),
+            function_fund_arc(nft_app_address),
             function_transfer_arc72(Txn.sender()),
             function_close_app(),
             Approve()

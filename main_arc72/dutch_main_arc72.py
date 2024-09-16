@@ -82,6 +82,7 @@ def contract_dutch_main_arc72():
                     )
                 )
             ),
+            function_fund_arc(nft_app_address),
             function_transfer_arc72(Txn.sender()),
             function_close_app(),
             Approve()

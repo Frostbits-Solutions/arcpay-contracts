@@ -29,6 +29,7 @@ fees_app_id = Bytes("fees_app_id")
 counter_party_address = Bytes("counter_party_address")
 total_client = Bytes('total_client')
 paiment_asa_id = Bytes('paiment_asa_id')
+nft_app_address = Bytes('nft_app_address')
 
 
 @Subroutine(TealType.none)
@@ -50,7 +51,7 @@ def function_close_app() -> Expr:
 
 
 @Subroutine(TealType.none)
-def function_fund_arc200() -> Expr:
+def function_fund_arc(arc_app_address) -> Expr:
     return Seq(
         InnerTxnBuilder.Begin(),
         InnerTxnBuilder.SetFields(
@@ -58,7 +59,7 @@ def function_fund_arc200() -> Expr:
                 TxnField.type_enum: TxnType.Payment,
                 TxnField.amount: Int(28500),
                 TxnField.sender: Global.current_application_address(),
-                TxnField.receiver: App.globalGet(arc200_app_address)
+                TxnField.receiver: App.globalGet(arc_app_address)
             }
         ),
         InnerTxnBuilder.Submit(),
@@ -431,4 +432,5 @@ def initialisation_arc72():
     return Seq(
         App.globalPut(nft_app_id, Btoi(Txn.application_args[0])),
         App.globalPut(nft_id, Txn.application_args[1]),
+        App.globalPut(nft_app_address, app_addr_from_id(App.globalGet(nft_app_id))),
     )

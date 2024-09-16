@@ -36,7 +36,7 @@ def contract_sale_arc200_rwa():
                     Int(100)
                 )
             ),
-            function_fund_arc200(),
+            function_fund_arc(arc200_app_address),
             function_transfer_arc200(
                 Minus(
                     App.globalGet(price),
