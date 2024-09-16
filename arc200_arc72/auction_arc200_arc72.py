@@ -104,7 +104,7 @@ def contract_auction_arc200_arc72():
                 Txn.sender() == App.globalGet(fees_address)
             )
         ),
-        function_send_note(Int(ZERO_FEES), Bytes("auction,cancel,200/72")),
+        function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},cancel,{note_signature}")),
         If(
             App.globalGet(bid_account) != Global.zero_address()
         ).Then(
