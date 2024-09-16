@@ -7,7 +7,7 @@ note_type = "dutch"
 def contract_dutch_main_asa():
 
     on_create = Seq(
-        App.globalPut(asa_id, Btoi(Txn.application_args[0])),
+        init_asa(0),
         App.globalPut(nft_max_price, Btoi(Txn.application_args[1])),
         App.globalPut(nft_min_price, Btoi(Txn.application_args[2])),
         App.globalPut(end_time_key, Btoi(Txn.application_args[3])),
