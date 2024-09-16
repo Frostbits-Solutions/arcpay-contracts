@@ -1,0 +1,47 @@
+name: publish-contracts
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: environment
+      chain:
+        type: choice
+        description: 'Select the chain to deploy to'
+        required: true
+        options: 
+        - 'algo:mainnet'
+        - 'algo:testnet'
+        - 'voi:testnet'
+        - 'voi:mainnet'
+      tag_filter:
+        type: string
+        description: 'Filter tags to deploy'
+      version:
+        type: string
+        description: 'Target SDK version. Format is <major>.<minor>.<patch> eg. 0.0.8. If left empty, the latest version will be updated.'
+      comment:
+        type: string
+        description: 'Comment for the release'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+        
+    - name: Install depedenencies
+      run: pip install -r requirements.txt
+    
+    - name: Build and publish contracts
+      run: python generate_contract.py
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }} 
+        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        TAG_FILTER: ${{ github.event.inputs.tag_filter }}
+        VERSION: ${{ github.event.inputs.version }}
+        COMMENT: ${{ github.event.inputs.comment }}
+        CHAIN: ${{ github.event.inputs.chain }} 
