@@ -434,3 +434,10 @@ def initialisation_arc72():
         App.globalPut(nft_id, Txn.application_args[1]),
         App.globalPut(nft_app_address, app_addr_from_id(App.globalGet(nft_app_id))),
     )
+
+
+def initialisation_arc200(index):
+    return Seq(
+        App.globalPut(arc200_app_id, Btoi(Txn.application_args[index])),
+        App.globalPut(arc200_app_address, app_addr_from_id(App.globalGet(arc200_app_id))),
+    )

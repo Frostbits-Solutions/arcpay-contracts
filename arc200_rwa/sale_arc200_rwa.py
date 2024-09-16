@@ -8,8 +8,7 @@ def contract_sale_arc200_rwa():
 
     on_create = Seq(
         initialisation_rwa(),
-        App.globalPut(arc200_app_id, Btoi(Txn.application_args[3])),
-        App.globalPut(arc200_app_address, app_addr_from_id(App.globalGet(arc200_app_id))),
+        initialisation_arc200(3),
         initialisation_smartcontract(4)
     )
 

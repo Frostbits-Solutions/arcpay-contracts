@@ -16,8 +16,7 @@ def contract_auction_arc200_arc72():
         initialisation_arc72(),
         App.globalPut(nft_min_price, Btoi(Txn.application_args[2])),
         App.globalPut(end_time_key, Btoi(Txn.application_args[3])),
-        App.globalPut(arc200_app_id, Btoi(Txn.application_args[4])),
-        App.globalPut(arc200_app_address, app_addr_from_id(App.globalGet(arc200_app_id))),
+        initialisation_arc200(4),
         initialisation_auction(),
         initialisation_smartcontract(5)
     )
