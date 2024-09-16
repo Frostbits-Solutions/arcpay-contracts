@@ -441,3 +441,15 @@ def initialisation_arc200(index):
         App.globalPut(arc200_app_id, Btoi(Txn.application_args[index])),
         App.globalPut(arc200_app_address, app_addr_from_id(App.globalGet(arc200_app_id))),
     )
+
+
+def init_payment_asa(index):
+    return Seq(
+        App.globalPut(paiment_asa_id, Btoi(Txn.application_args[index]))
+    )
+
+
+def init_asa(index):
+    return Seq(
+        App.globalPut(asa_id, Btoi(Txn.application_args[index]))
+    )

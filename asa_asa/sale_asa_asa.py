@@ -7,9 +7,9 @@ note_type = "sale"
 def contract_sale_asa_asa():
 
     on_create = Seq(
-        App.globalPut(asa_id, Btoi(Txn.application_args[0])),
+        init_asa(0),
         App.globalPut(price, Btoi(Txn.application_args[1])),
-        App.globalPut(paiment_asa_id, Btoi(Txn.application_args[2])),
+        init_payment_asa(2),
         initialisation_smartcontract(3)
     )
 
