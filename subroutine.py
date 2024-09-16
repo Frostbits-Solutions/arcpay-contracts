@@ -404,8 +404,10 @@ def initialisation_smartcontract(index):
     )
 
 
-def initialisation_auction():
+def initialisation_auction(index):
     return Seq(
+        App.globalPut(nft_min_price, Btoi(Txn.application_args[index])),
+        App.globalPut(end_time_key, Btoi(Txn.application_args[index+1])),
         App.globalPut(bid_account, Global.zero_address()),
         App.globalPut(late_bid_delay, Int(600)),
         App.globalPut(bid_amount, Int(0)),

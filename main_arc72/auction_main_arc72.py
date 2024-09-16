@@ -21,9 +21,7 @@ def contract_auction_main_arc72():
 
     on_create = Seq(
         initialisation_arc72(),
-        App.globalPut(nft_min_price, Btoi(Txn.application_args[2])),
-        App.globalPut(end_time_key, Btoi(Txn.application_args[3])),
-        initialisation_auction(),
+        initialisation_auction(2),
         initialisation_smartcontract(4)
     )
 
