@@ -407,15 +407,18 @@ def initialisation_smartcontract(index):
 def initialisation_auction(index):
     return Seq(
         App.globalPut(nft_min_price, Btoi(Txn.application_args[index])),
-        App.globalPut(end_time_key, Btoi(Txn.application_args[index+1])),
+        App.globalPut(end_time_key, Btoi(Txn.application_args[index + 1])),
         App.globalPut(bid_account, Global.zero_address()),
         App.globalPut(late_bid_delay, Int(600)),
         App.globalPut(bid_amount, Int(0)),
     )
 
 
-def initialisation_dutch():
+def initialisation_dutch(index):
     return Seq(
+        App.globalPut(nft_max_price, Btoi(Txn.application_args[index])),
+        App.globalPut(nft_min_price, Btoi(Txn.application_args[index + 1])),
+        App.globalPut(end_time_key, Btoi(Txn.application_args[index + 2])),
         App.globalPut(start_time_key, Global.latest_timestamp()),
         Assert(App.globalGet(nft_max_price) > App.globalGet(nft_min_price)),
         Assert(App.globalGet(end_time_key) > App.globalGet(start_time_key)),

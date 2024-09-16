@@ -8,11 +8,8 @@ def contract_dutch_arc200_arc72():
 
     on_create = Seq(
         initialisation_arc72(),
-        App.globalPut(nft_max_price, Btoi(Txn.application_args[2])),
-        App.globalPut(nft_min_price, Btoi(Txn.application_args[3])),
-        App.globalPut(end_time_key, Btoi(Txn.application_args[4])),
         initialisation_arc200(5),
-        initialisation_dutch(),
+        initialisation_dutch(2),
         initialisation_smartcontract(6)
     )
 

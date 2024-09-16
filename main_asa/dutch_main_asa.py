@@ -8,10 +8,7 @@ def contract_dutch_main_asa():
 
     on_create = Seq(
         init_asa(0),
-        App.globalPut(nft_max_price, Btoi(Txn.application_args[1])),
-        App.globalPut(nft_min_price, Btoi(Txn.application_args[2])),
-        App.globalPut(end_time_key, Btoi(Txn.application_args[3])),
-        initialisation_dutch(),
+        initialisation_dutch(1),
         initialisation_smartcontract(4)
     )
 
