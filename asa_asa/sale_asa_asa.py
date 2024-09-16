@@ -8,7 +8,7 @@ def contract_sale_asa_asa():
 
     on_create = Seq(
         init_asa(0),
-        App.globalPut(price, Btoi(Txn.application_args[1])),
+        initialisation_sale(1),
         init_payment_asa(2),
         initialisation_smartcontract(3)
     )

@@ -425,9 +425,14 @@ def initialisation_dutch(index):
     )
 
 
+def initialisation_sale(index):
+    return Seq(
+        App.globalPut(price, Btoi(Txn.application_args[index])),
+    )
+
+
 def initialisation_rwa():
     return Seq(
-        App.globalPut(price, Btoi(Txn.application_args[0])),
         App.globalPut(name, Txn.application_args[1]),
         App.globalPut(description, Txn.application_args[2]),
     )
