@@ -7,7 +7,7 @@ note_type = "dutch"
 def contract_dutch_main_arc72():
 
     on_create = Seq(
-        initialisation_arc72(),
+        initialisation_arc72(0),
         initialisation_dutch(2),
         initialisation_smartcontract(5)
     )

@@ -431,17 +431,17 @@ def initialisation_sale(index):
     )
 
 
-def initialisation_rwa():
+def initialisation_rwa(index):
     return Seq(
-        App.globalPut(name, Txn.application_args[1]),
-        App.globalPut(description, Txn.application_args[2]),
+        App.globalPut(name, Txn.application_args[index]),
+        App.globalPut(description, Txn.application_args[index + 1]),
     )
 
 
-def initialisation_arc72():
+def initialisation_arc72(index):
     return Seq(
-        App.globalPut(nft_app_id, Btoi(Txn.application_args[0])),
-        App.globalPut(nft_id, Txn.application_args[1]),
+        App.globalPut(nft_app_id, Btoi(Txn.application_args[index])),
+        App.globalPut(nft_id, Txn.application_args[index + 1]),
         App.globalPut(nft_app_address, app_addr_from_id(App.globalGet(nft_app_id))),
     )
 

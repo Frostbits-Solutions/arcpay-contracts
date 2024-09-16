@@ -7,7 +7,7 @@ note_type = "sale"
 def contract_sale_arc200_arc72():
 
     on_create = Seq(
-        initialisation_arc72(),
+        initialisation_arc72(0),
         initialisation_sale(2),
         initialisation_arc200(3),
         initialisation_smartcontract(4)

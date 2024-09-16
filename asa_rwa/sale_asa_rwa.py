@@ -8,7 +8,7 @@ def contract_sale_asa_rwa():
 
     on_create = Seq(
         initialisation_sale(0),
-        initialisation_rwa(),
+        initialisation_rwa(1),
         init_asa(3),
         initialisation_smartcontract(4)
     )

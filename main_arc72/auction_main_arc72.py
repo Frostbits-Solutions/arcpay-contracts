@@ -20,7 +20,7 @@ def contract_auction_main_arc72():
         )
 
     on_create = Seq(
-        initialisation_arc72(),
+        initialisation_arc72(0),
         initialisation_auction(2),
         initialisation_smartcontract(4)
     )
