@@ -20,10 +20,8 @@ def contract_auction_main_arc72():
         )
 
     on_create = Seq(
-        initialisation_arc72(),
-        App.globalPut(nft_min_price, Btoi(Txn.application_args[2])),
-        App.globalPut(end_time_key, Btoi(Txn.application_args[3])),
-        initialisation_auction(),
+        initialisation_arc72(0),
+        initialisation_auction(2),
         initialisation_smartcontract(4)
     )
 
@@ -98,6 +96,7 @@ def contract_auction_main_arc72():
                 )
             )
         ),
+        function_fund_arc(nft_app_address),
         function_transfer_arc72(App.globalGet(bid_account)),
         function_close_app(),
         Approve()

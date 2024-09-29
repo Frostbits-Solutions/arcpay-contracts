@@ -13,12 +13,9 @@ def contract_auction_arc200_arc72():
         )
 
     on_create = Seq(
-        initialisation_arc72(),
-        App.globalPut(nft_min_price, Btoi(Txn.application_args[2])),
-        App.globalPut(end_time_key, Btoi(Txn.application_args[3])),
-        App.globalPut(arc200_app_id, Btoi(Txn.application_args[4])),
-        App.globalPut(arc200_app_address, app_addr_from_id(App.globalGet(arc200_app_id))),
-        initialisation_auction(),
+        initialisation_arc72(0),
+        initialisation_arc200(4),
+        initialisation_auction(2),
         initialisation_smartcontract(5)
     )
 
@@ -77,7 +74,7 @@ def contract_auction_arc200_arc72():
                 Int(100)
             )
         ),
-        function_fund_arc200(),
+        function_fund_arc(arc200_app_address),
         function_transfer_arc200(
             Minus(
                 App.globalGet(bid_amount),
@@ -94,6 +91,7 @@ def contract_auction_arc200_arc72():
             ),
             Global.creator_address()
         ),
+        function_fund_arc(nft_app_address),
         function_transfer_arc72(App.globalGet(bid_account)),
         function_close_app(),
         Approve()
@@ -106,7 +104,7 @@ def contract_auction_arc200_arc72():
                 Txn.sender() == App.globalGet(fees_address)
             )
         ),
-        function_send_note(Int(ZERO_FEES), Bytes("auction,cancel,200/72")),
+        function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},cancel,{note_signature}")),
         If(
             App.globalGet(bid_account) != Global.zero_address()
         ).Then(

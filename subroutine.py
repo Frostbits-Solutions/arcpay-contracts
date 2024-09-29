@@ -5,7 +5,7 @@ CREATE_FEES = 0
 ZERO_FEES = 0
 # voi 87414541
 # algo 718742597
-FEES_APP_ID = 87414541
+FEES_APP_ID = 718742597
 
 
 fees_address = Bytes('fees_address')
@@ -29,6 +29,7 @@ fees_app_id = Bytes("fees_app_id")
 counter_party_address = Bytes("counter_party_address")
 total_client = Bytes('total_client')
 paiment_asa_id = Bytes('paiment_asa_id')
+nft_app_address = Bytes('nft_app_address')
 
 
 @Subroutine(TealType.none)
@@ -50,7 +51,7 @@ def function_close_app() -> Expr:
 
 
 @Subroutine(TealType.none)
-def function_fund_arc200() -> Expr:
+def function_fund_arc(arc_app_address) -> Expr:
     return Seq(
         InnerTxnBuilder.Begin(),
         InnerTxnBuilder.SetFields(
@@ -58,7 +59,7 @@ def function_fund_arc200() -> Expr:
                 TxnField.type_enum: TxnType.Payment,
                 TxnField.amount: Int(28500),
                 TxnField.sender: Global.current_application_address(),
-                TxnField.receiver: App.globalGet(arc200_app_address)
+                TxnField.receiver: App.globalGet(arc_app_address)
             }
         ),
         InnerTxnBuilder.Submit(),
@@ -313,6 +314,7 @@ def on_fund_optin_asa(note):
         Approve()
     )
 
+
 def on_fund_optin(note):
     return Seq(
         Assert(Txn.sender() == Global.creator_address()),
@@ -403,32 +405,62 @@ def initialisation_smartcontract(index):
     )
 
 
-def initialisation_auction():
+def initialisation_auction(index):
     return Seq(
+        App.globalPut(nft_min_price, Btoi(Txn.application_args[index])),
+        App.globalPut(end_time_key, Btoi(Txn.application_args[index + 1])),
         App.globalPut(bid_account, Global.zero_address()),
         App.globalPut(late_bid_delay, Int(600)),
         App.globalPut(bid_amount, Int(0)),
     )
 
 
-def initialisation_dutch():
+def initialisation_dutch(index):
     return Seq(
+        App.globalPut(nft_max_price, Btoi(Txn.application_args[index])),
+        App.globalPut(nft_min_price, Btoi(Txn.application_args[index + 1])),
+        App.globalPut(end_time_key, Btoi(Txn.application_args[index + 2])),
         App.globalPut(start_time_key, Global.latest_timestamp()),
         Assert(App.globalGet(nft_max_price) > App.globalGet(nft_min_price)),
         Assert(App.globalGet(end_time_key) > App.globalGet(start_time_key)),
     )
 
 
-def initialisation_rwa():
+def initialisation_sale(index):
     return Seq(
-        App.globalPut(price, Btoi(Txn.application_args[0])),
-        App.globalPut(name, Txn.application_args[1]),
-        App.globalPut(description, Txn.application_args[2]),
+        App.globalPut(price, Btoi(Txn.application_args[index])),
     )
 
 
-def initialisation_arc72():
+def initialisation_rwa(index):
     return Seq(
-        App.globalPut(nft_app_id, Btoi(Txn.application_args[0])),
-        App.globalPut(nft_id, Txn.application_args[1]),
+        App.globalPut(name, Txn.application_args[index]),
+        App.globalPut(description, Txn.application_args[index + 1]),
+    )
+
+
+def initialisation_arc72(index):
+    return Seq(
+        App.globalPut(nft_app_id, Btoi(Txn.application_args[index])),
+        App.globalPut(nft_id, Txn.application_args[index + 1]),
+        App.globalPut(nft_app_address, app_addr_from_id(App.globalGet(nft_app_id))),
+    )
+
+
+def initialisation_arc200(index):
+    return Seq(
+        App.globalPut(arc200_app_id, Btoi(Txn.application_args[index])),
+        App.globalPut(arc200_app_address, app_addr_from_id(App.globalGet(arc200_app_id))),
+    )
+
+
+def init_payment_asa(index):
+    return Seq(
+        App.globalPut(paiment_asa_id, Btoi(Txn.application_args[index]))
+    )
+
+
+def init_asa(index):
+    return Seq(
+        App.globalPut(asa_id, Btoi(Txn.application_args[index]))
     )

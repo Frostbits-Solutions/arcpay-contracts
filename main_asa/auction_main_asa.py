@@ -20,10 +20,8 @@ def contract_auction_main_asa():
         )
 
     on_create = Seq(
-        App.globalPut(asa_id, Btoi(Txn.application_args[0])),
-        App.globalPut(nft_min_price, Btoi(Txn.application_args[1])),
-        App.globalPut(end_time_key, Btoi(Txn.application_args[2])),
-        initialisation_auction(),
+        init_asa(0),
+        initialisation_auction(1),
         initialisation_smartcontract(3)
     )
 

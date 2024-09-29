@@ -7,8 +7,8 @@ note_type = "sale"
 def contract_sale_main_arc72():
 
     on_create = Seq(
-        initialisation_arc72(),
-        App.globalPut(price, Btoi(Txn.application_args[2])),
+        initialisation_arc72(0),
+        initialisation_sale(2),
         initialisation_smartcontract(3)
     )
 
@@ -58,6 +58,7 @@ def contract_sale_main_arc72():
                     )
                 )
             ),
+            function_fund_arc(nft_app_address),
             function_transfer_arc72(Txn.sender()),
             function_close_app(),
             Approve()

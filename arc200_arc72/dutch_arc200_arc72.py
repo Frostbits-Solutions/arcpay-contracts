@@ -7,13 +7,9 @@ note_type = "dutch"
 def contract_dutch_arc200_arc72():
 
     on_create = Seq(
-        initialisation_arc72(),
-        App.globalPut(nft_max_price, Btoi(Txn.application_args[2])),
-        App.globalPut(nft_min_price, Btoi(Txn.application_args[3])),
-        App.globalPut(end_time_key, Btoi(Txn.application_args[4])),
-        App.globalPut(arc200_app_id, Btoi(Txn.application_args[5])),
-        App.globalPut(arc200_app_address, app_addr_from_id(App.globalGet(arc200_app_id))),
-        initialisation_dutch(),
+        initialisation_arc72(0),
+        initialisation_arc200(5),
+        initialisation_dutch(2),
         initialisation_smartcontract(6)
     )
 
@@ -66,7 +62,7 @@ def contract_dutch_arc200_arc72():
                     Int(100)
                 )
             ),
-            function_fund_arc200(),
+            function_fund_arc(arc200_app_address),
             function_transfer_arc200(
                 Minus(
                     Btoi(Txn.application_args[1]),
@@ -83,6 +79,7 @@ def contract_dutch_arc200_arc72():
                 ),
                 Global.creator_address()
             ),
+            function_fund_arc(nft_app_address),
             function_transfer_arc72(Txn.sender()),
             function_close_app(),
             Approve()

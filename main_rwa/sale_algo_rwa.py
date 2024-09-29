@@ -7,7 +7,8 @@ note_type = "sale"
 def contract_sale_algo_rwa():
 
     on_create = Seq(
-        initialisation_rwa(),
+        initialisation_sale(0),
+        initialisation_rwa(1),
         initialisation_smartcontract(3)
     )
 

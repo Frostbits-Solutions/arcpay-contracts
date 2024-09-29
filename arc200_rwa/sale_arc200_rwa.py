@@ -7,9 +7,9 @@ note_type = "sale"
 def contract_sale_arc200_rwa():
 
     on_create = Seq(
-        initialisation_rwa(),
-        App.globalPut(arc200_app_id, Btoi(Txn.application_args[3])),
-        App.globalPut(arc200_app_address, app_addr_from_id(App.globalGet(arc200_app_id))),
+        initialisation_sale(0),
+        initialisation_rwa(1),
+        initialisation_arc200(3),
         initialisation_smartcontract(4)
     )
 
@@ -36,7 +36,7 @@ def contract_sale_arc200_rwa():
                     Int(100)
                 )
             ),
-            function_fund_arc200(),
+            function_fund_arc(arc200_app_address),
             function_transfer_arc200(
                 Minus(
                     App.globalGet(price),
