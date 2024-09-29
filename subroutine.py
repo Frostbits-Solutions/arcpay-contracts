@@ -5,7 +5,7 @@ CREATE_FEES = 0
 ZERO_FEES = 0
 # voi 87414541
 # algo 718742597
-FEES_APP_ID = 87414541
+FEES_APP_ID = 718742597
 
 
 fees_address = Bytes('fees_address')
@@ -313,6 +313,7 @@ def on_fund_optin_asa(note):
         ),
         Approve()
     )
+
 
 def on_fund_optin(note):
     return Seq(
