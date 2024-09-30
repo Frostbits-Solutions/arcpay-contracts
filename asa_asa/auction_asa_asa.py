@@ -14,7 +14,7 @@ def contract_auction_asa_asa():
                     TxnField.type_enum: TxnType.AssetTransfer,
                     TxnField.xfer_asset: App.globalGet(paiment_asa_id),
                     TxnField.asset_receiver: App.globalGet(bid_account),
-                    TxnField.asset_amount: App.globalGet(bid_amount) - Global.min_txn_fee(),
+                    TxnField.asset_amount: App.globalGet(bid_amount),
                     TxnField.fee: Global.min_txn_fee()
                 }
             ),
