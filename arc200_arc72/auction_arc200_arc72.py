@@ -8,9 +8,7 @@ def contract_auction_arc200_arc72():
 
     @Subroutine(TealType.none)
     def function_repay_bidder() -> Expr:
-        return Seq(
-            function_transfer_arc200(App.globalGet(bid_amount), App.globalGet(bid_account))
-        )
+        return function_transfer_arc200(App.globalGet(bid_amount), App.globalGet(bid_account))
 
     on_create = Seq(
         initialisation_arc72(0),
