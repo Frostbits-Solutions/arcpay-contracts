@@ -47,7 +47,7 @@ def contract_dutch_asa_asa(proxy_app_id):
         Seq(
             function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
             function_contract_fees_asa(Gtxn[Txn.group_index() - Int(1)].asset_amount()),
-            function_payment_asa_end(Gtxn[Txn.group_index() - Int(1)].asset_amount()),
+            function_payment_manager(Gtxn[Txn.group_index() - Int(1)].asset_amount(), function_payment_asa),
             function_send_nft_asa(Txn.sender(), Int(1)),
             function_asa_optout(App.globalGet(asa_id)),
             function_asa_optout(App.globalGet(paiment_asa_id)),

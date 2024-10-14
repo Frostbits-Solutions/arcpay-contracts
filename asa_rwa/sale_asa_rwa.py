@@ -26,7 +26,7 @@ def contract_sale_asa_rwa(proxy_app_id):
         Seq(
             function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
             function_contract_fees_asa(App.globalGet(price)),
-            function_payment_asa_end(App.globalGet(price)),
+            function_payment_manager(App.globalGet(price), function_payment_asa),
             function_asa_optout(App.globalGet(paiment_asa_id)),
             function_close_app(),
             Approve()

@@ -24,7 +24,7 @@ def contract_sale_main_asa(proxy_app_id):
         Seq(
             function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
             function_contract_fees(App.globalGet(price)),
-            function_payment_end(App.globalGet(price)),
+            function_payment_manager(App.globalGet(price), function_payment),
             function_send_nft_asa(Txn.sender(), Int(1)),
             function_asa_optout(App.globalGet(asa_id)),
             function_close_app(),

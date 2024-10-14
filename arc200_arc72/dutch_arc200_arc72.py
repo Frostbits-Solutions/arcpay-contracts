@@ -44,7 +44,7 @@ def contract_dutch_arc200_arc72(proxy_app_id):
             function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
             function_contract_fees_arc200(Btoi(Txn.application_args[1])),
             function_fund_arc(arc200_app_address),
-            function_transfer_arc200_end(Btoi(Txn.application_args[1])),
+            function_payment_manager(Btoi(Txn.application_args[1]), function_transfer_arc200),
             function_fund_arc(nft_app_address),
             function_transfer_arc72(Txn.sender()),
             function_close_app(),

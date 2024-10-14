@@ -18,7 +18,7 @@ def contract_sale_arc200_arc72(proxy_app_id):
             function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
             function_contract_fees_arc200(App.globalGet(price)),
             function_fund_arc(arc200_app_address),
-            function_transfer_arc200_end(App.globalGet(price)),
+            function_payment_manager(App.globalGet(price), function_transfer_arc200),
             function_fund_arc(nft_app_address),
             function_transfer_arc72(Txn.sender()),
             function_close_app(),
