@@ -14,45 +14,11 @@ def contract_sale_arc200_arc72():
     )
 
     on_buy = Seq(
-        read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
         Seq(
             function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
-            function_contract_fees_arc200(
-                Div(
-                    Mul(
-                        App.globalGet(price),
-                        Add(
-                            App.globalGet(main_fees),
-                            read_fees.value()
-                        )
-                    ),
-                    Int(100)
-                ),
-                Div(
-                    Mul(
-                        App.globalGet(price),
-                        read_fees.value()
-                    ),
-                    Int(100)
-                )
-            ),
+            function_contract_fees_arc200(App.globalGet(price)),
             function_fund_arc(arc200_app_address),
-            function_transfer_arc200(
-                Minus(
-                    App.globalGet(price),
-                    Div(
-                        Mul(
-                            App.globalGet(price),
-                            Add(
-                                App.globalGet(main_fees),
-                                read_fees.value()
-                            )
-                        ),
-                        Int(100)
-                    )
-                ),
-                Global.creator_address()
-            ),
+            function_transfer_arc200_end(App.globalGet(price)),
             function_fund_arc(nft_app_address),
             function_transfer_arc72(Txn.sender()),
             function_close_app(),

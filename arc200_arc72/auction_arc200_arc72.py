@@ -53,44 +53,10 @@ def contract_auction_arc200_arc72():
                 App.globalGet(end_time_key) <= Global.latest_timestamp()
             )
         ),
-        read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
         function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},close,{note_signature}")),
-        function_contract_fees_arc200(
-            Div(
-                Mul(
-                    App.globalGet(bid_amount),
-                    Add(
-                        App.globalGet(main_fees),
-                        read_fees.value()
-                    )
-                ),
-                Int(100)
-            ),
-            Div(
-                Mul(
-                    App.globalGet(bid_amount),
-                    read_fees.value()
-                ),
-                Int(100)
-            )
-        ),
+        function_contract_fees_arc200(App.globalGet(bid_amount)),
         function_fund_arc(arc200_app_address),
-        function_transfer_arc200(
-            Minus(
-                App.globalGet(bid_amount),
-                Div(
-                    Mul(
-                        App.globalGet(bid_amount),
-                        Add(
-                            App.globalGet(main_fees),
-                            read_fees.value()
-                        )
-                    ),
-                    Int(100)
-                )
-            ),
-            Global.creator_address()
-        ),
+        function_transfer_arc200_end(App.globalGet(bid_amount)),
         function_fund_arc(nft_app_address),
         function_transfer_arc72(App.globalGet(bid_account)),
         function_close_app(),

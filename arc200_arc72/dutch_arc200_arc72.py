@@ -41,44 +41,10 @@ def contract_dutch_arc200_arc72():
             )
         ),
         Seq(
-            read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
             function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
-            function_contract_fees_arc200(
-                Div(
-                    Mul(
-                        Btoi(Txn.application_args[1]),
-                        Add(
-                            App.globalGet(main_fees),
-                            read_fees.value()
-                        )
-                    ),
-                    Int(100)
-                ),
-                Div(
-                    Mul(
-                        Btoi(Txn.application_args[1]),
-                        read_fees.value()
-                    ),
-                    Int(100)
-                )
-            ),
+            function_contract_fees_arc200(Btoi(Txn.application_args[1])),
             function_fund_arc(arc200_app_address),
-            function_transfer_arc200(
-                Minus(
-                    Btoi(Txn.application_args[1]),
-                    Div(
-                        Mul(
-                            Btoi(Txn.application_args[1]),
-                            Add(
-                                App.globalGet(main_fees),
-                                read_fees.value()
-                            )
-                        ),
-                        Int(100)
-                    )
-                ),
-                Global.creator_address()
-            ),
+            function_transfer_arc200_end(Btoi(Txn.application_args[1])),
             function_fund_arc(nft_app_address),
             function_transfer_arc72(Txn.sender()),
             function_close_app(),

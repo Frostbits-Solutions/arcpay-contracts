@@ -91,6 +91,30 @@ def function_send_note(amount: Expr, note: Expr) -> Expr:
 
 
 @Subroutine(TealType.none)
+def function_transfer_arc200_end(amount: Expr) -> Expr:
+    return Seq(
+        read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
+        read_main_fees := App.globalGetEx(App.globalGet(fees_app_id), main_fees),
+        function_transfer_arc200(
+            Minus(
+                amount,
+                Div(
+                    Mul(
+                        amount,
+                        Add(
+                            read_main_fees.value(),
+                            read_fees.value()
+                        )
+                    ),
+                    Int(100)
+                )
+            ),
+            Global.creator_address()
+        ),
+    )
+
+
+@Subroutine(TealType.none)
 def function_transfer_arc200(amount: Expr, to: Expr) -> Expr:
     return Seq(
         InnerTxnBuilder.Begin(),
