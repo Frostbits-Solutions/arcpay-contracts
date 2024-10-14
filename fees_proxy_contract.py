@@ -24,6 +24,7 @@ def approval_program():
     update_main_fees = Seq(
         Assert(App.globalGet(Concat(Bytes('m_'), Txn.sender())) == Txn.sender()),
         App.globalPut(Bytes('main_fees'), Btoi(Txn.application_args[1])),
+        Approve()
     )
 
     # ################################################################################################################ #
