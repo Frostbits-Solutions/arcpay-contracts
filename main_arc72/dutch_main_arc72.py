@@ -13,45 +13,14 @@ def contract_dutch_main_arc72(proxy_app_id):
     )
 
     on_buy = Seq(
-        Assert(
-            And(
-                # formula to compute price is y = (((max-min)/(start-end)) * (current_time - start )) + max
-                # new formula : max - (current-start)((max-min)/(end-start))
-                Gtxn[Txn.group_index() - Int(1)].amount() >= Minus(
-                    App.globalGet(nft_max_price),
-                    Div(
-                        Mul(
-                            Minus(
-                                App.globalGet(nft_max_price),
-                                App.globalGet(nft_min_price)
-                            ),
-                            Minus(
-                                Global.latest_timestamp(),
-                                App.globalGet(start_time_key)
-                            )
-                        ),
-                        Minus(
-                            App.globalGet(end_time_key),
-                            App.globalGet(start_time_key)
-                        )
-                    )
-                ),
-                Global.latest_timestamp() <= App.globalGet(end_time_key),
-                Gtxn[Txn.group_index() - Int(1)].receiver() == Global.current_application_address(),
-                Gtxn[Txn.group_index() - Int(1)].type_enum() == TxnType.Payment,
-                Gtxn[Txn.group_index() - Int(1)].sender() == Txn.sender()
-            )
-        ),
-        Seq(
-            function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
-            function_contract_fees(Gtxn[Txn.group_index() - Int(1)].amount()),
-            function_payment_manager(Gtxn[Txn.group_index() - Int(1)].amount(), function_payment),
-            function_fund_arc(nft_app_address),
-            function_transfer_arc72(Txn.sender()),
-            function_close_app(),
-            Approve()
-        ),
-        Reject(),
+        assert_ducth(Gtxn[Txn.group_index() - Int(1)].amount()),
+        function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
+        function_contract_fees(Gtxn[Txn.group_index() - Int(1)].amount()),
+        function_payment_manager(Gtxn[Txn.group_index() - Int(1)].amount(), function_payment),
+        function_fund_arc(nft_app_address),
+        function_transfer_arc72(Txn.sender()),
+        function_close_app(),
+        Approve()
     )
 
     program = Cond(

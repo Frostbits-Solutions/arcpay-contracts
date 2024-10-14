@@ -546,3 +546,32 @@ def init_asa(index):
     return Seq(
         App.globalPut(asa_id, Btoi(Txn.application_args[index]))
     )
+
+
+def assert_ducth(amount):
+    return Assert(
+        And(
+            # formula to compute price is y = (((max-min)/(start-end)) * (current_time - start )) + max
+            # new formula : max - (current-start)((max-min)/(end-start))
+            amount >= Minus(
+                App.globalGet(nft_max_price),
+                Div(
+                    Mul(
+                        Minus(
+                            App.globalGet(nft_max_price),
+                            App.globalGet(nft_min_price)
+                        ),
+                        Minus(
+                            Global.latest_timestamp(),
+                            App.globalGet(start_time_key)
+                        )
+                    ),
+                    Minus(
+                        App.globalGet(end_time_key),
+                        App.globalGet(start_time_key)
+                    )
+                )
+            ),
+            Global.latest_timestamp() <= App.globalGet(end_time_key),
+        )
+    )
