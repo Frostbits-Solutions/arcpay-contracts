@@ -21,14 +21,11 @@ def contract_sale_main_rwa(proxy_app_id):
                 Gtxn[Txn.group_index() - Int(1)].sender() == Txn.sender()
             )
         ),
-        Seq(
-            function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
-            function_contract_fees(App.globalGet(price)),
-            function_payment_manager(App.globalGet(price), function_payment),
-            function_close_app(),
-            Approve()
-        ),
-        Reject()
+        function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
+        function_contract_fees(App.globalGet(price)),
+        function_payment_manager(App.globalGet(price), function_payment),
+        function_close_app(),
+        Approve()
     )
 
     program = Cond(
