@@ -4,13 +4,13 @@ from asa_asa.note_signature import note_signature
 note_type = "dutch"
 
 
-def contract_dutch_asa_asa():
+def contract_dutch_asa_asa(proxy_app_id):
 
     on_create = Seq(
         init_asa(0),
         init_payment_asa(4),
         initialisation_dutch(1),
-        initialisation_smartcontract(5)
+        initialisation_smartcontract(5, proxy_app_id)
     )
 
     on_buy = Seq(

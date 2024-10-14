@@ -87,8 +87,8 @@ dico_tag = {
     }
 }
 
-def compile_contract(tag):
-    compiled = compileTeal(dico_tag[tag]['pyteal'](), mode=Mode.Application, version=10)
+def compile_contract(tag, proxy_app_id):
+    compiled = compileTeal(dico_tag[tag]['pyteal'](proxy_app_id), mode=Mode.Application, version=10)
     algod_token_tx = ""
     headers_tx = {"X-Algo-API-Token": algod_token_tx}
     client = AlgodClient(
@@ -100,6 +100,18 @@ def compile_contract(tag):
 
 
 if __name__ == "__main__":
+    fees_app_id_dict = {
+        'algo': {
+            'testnet': 718742597,
+            'mainnet': 2337523785
+        },
+        'voi': {
+            'testnet': 87414541,
+            'mainnet': 87414541
+        }
+    }
+
+
     tags = list(dico_tag.keys())
     if os.environ.get('TAG_FILTER', '') != '':
         tags = [el for el in tags if os.environ.get('TAG_FILTER') in el]
@@ -111,8 +123,9 @@ if __name__ == "__main__":
         version = client_supabase.table('sdk_versions').select('id').order('created_at', desc=True).limit(1).execute().data[0]['id']
     
     for tag in tags:
+        proxy_app_id = fees_app_id_dict[dico_tag[tag]['chain']][os.environ.get('NETWORK')]
         print(f"Processing {tag}")
-        byte_code = compile_contract(tag)
+        byte_code = compile_contract(tag, proxy_app_id)
         comment = os.environ.get('COMMENT')
         check_contract = client_supabase.table('contracts').select('*').eq('byte_code', byte_code).execute()
         if len(check_contract.data) == 1:

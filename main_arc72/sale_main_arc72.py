@@ -4,12 +4,12 @@ from main_arc72.note_signature import note_signature
 note_type = "sale"
 
 
-def contract_sale_main_arc72():
+def contract_sale_main_arc72(proxy_app_id):
 
     on_create = Seq(
         initialisation_arc72(0),
         initialisation_sale(2),
-        initialisation_smartcontract(3)
+        initialisation_smartcontract(3, proxy_app_id)
     )
 
     on_buy = Seq(

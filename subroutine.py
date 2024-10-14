@@ -3,10 +3,6 @@ from pyteal import *
 # CONFIG
 CREATE_FEES = 0
 ZERO_FEES = 0
-# voi 87414541
-# algo 718742597
-FEES_APP_ID = 718742597
-
 
 fees_address = Bytes('fees_address')
 nft_app_id = Bytes("nft_app_id")
@@ -528,12 +524,11 @@ def function_asa_optout(asset_id) -> Expr:
     )
 
 
-def initialisation_smartcontract(index):
+def initialisation_smartcontract(index, proxy_app_id):
     return Seq(
         App.globalPut(counter_party_address, Txn.application_args[index]),
-        App.globalPut(fees_app_id, Int(FEES_APP_ID)),
+        App.globalPut(fees_app_id, Int(proxy_app_id)),
         App.globalPut(fees_address, app_addr_from_id(App.globalGet(fees_app_id))),
-        App.globalPut(main_fees, Int(2)),
         Approve(),
     )
 

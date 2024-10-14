@@ -4,7 +4,7 @@ from arc200_arc72.note_signature import note_signature
 note_type = "auction"
 
 
-def contract_auction_arc200_arc72():
+def contract_auction_arc200_arc72(proxy_app_id):
 
     @Subroutine(TealType.none)
     def function_repay_bidder() -> Expr:
@@ -14,7 +14,7 @@ def contract_auction_arc200_arc72():
         initialisation_arc72(0),
         initialisation_arc200(4),
         initialisation_auction(2),
-        initialisation_smartcontract(5)
+        initialisation_smartcontract(5, proxy_app_id)
     )
 
     on_bid = Seq(

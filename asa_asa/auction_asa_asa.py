@@ -4,7 +4,7 @@ from asa_asa.note_signature import note_signature
 note_type = "auction"
 
 
-def contract_auction_asa_asa():
+def contract_auction_asa_asa(proxy_app_id):
     @Subroutine(TealType.none)
     def function_repay_bidder() -> Expr:
         return function_payment_asa(App.globalGet(bid_amount), App.globalGet(bid_account))
@@ -13,7 +13,7 @@ def contract_auction_asa_asa():
         init_asa(0),
         init_payment_asa(3),
         initialisation_auction(1),
-        initialisation_smartcontract(4)
+        initialisation_smartcontract(4, proxy_app_id)
     )
 
     on_bid = Seq(

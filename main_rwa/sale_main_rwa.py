@@ -4,12 +4,12 @@ from main_rwa.note_signature import note_signature
 note_type = "sale"
 
 
-def contract_sale_main_rwa():
+def contract_sale_main_rwa(proxy_app_id):
 
     on_create = Seq(
         initialisation_sale(0),
         initialisation_rwa(1),
-        initialisation_smartcontract(3)
+        initialisation_smartcontract(3, proxy_app_id)
     )
 
     on_buy = Seq(

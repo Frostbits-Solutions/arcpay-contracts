@@ -4,13 +4,13 @@ from asa_asa.note_signature import note_signature
 note_type = "sale"
 
 
-def contract_sale_asa_asa():
+def contract_sale_asa_asa(proxy_app_id):
 
     on_create = Seq(
         init_asa(0),
         initialisation_sale(1),
         init_payment_asa(2),
-        initialisation_smartcontract(3)
+        initialisation_smartcontract(3, proxy_app_id)
     )
 
     on_buy = Seq(
