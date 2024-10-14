@@ -53,7 +53,7 @@ def approval_program():
 
     add_client = Seq(
         Assert(App.globalGet(Concat(Bytes('m_'), Txn.sender())) == Txn.sender()),
-        App.globalPut(Txn.application_args[1], Int(1)),
+        App.globalPut(Txn.application_args[1], Btoi(Txn.application_args[2])),
         Approve()
     )
 
