@@ -270,6 +270,7 @@ def approval_program():
 
     program = Cond(
         [Txn.application_id() == Int(0), on_create],
+        [Txn.application_args[0] == Bytes("update_main_fees"), update_main_fees],
         [Txn.application_args[0] == Bytes("add_master"), add_master],
         [Txn.application_args[0] == Bytes("del_master"), del_master],
         [Txn.application_args[0] == Bytes("add_client"), add_client],
