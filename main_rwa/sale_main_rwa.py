@@ -4,7 +4,7 @@ from main_rwa.note_signature import note_signature
 note_type = "sale"
 
 
-def contract_sale_algo_rwa():
+def contract_sale_main_rwa():
 
     on_create = Seq(
         initialisation_sale(0),

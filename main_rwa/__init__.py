@@ -1,1 +1,1 @@
-from main_rwa.sale_algo_rwa import contract_sale_algo_rwa
+from main_rwa.sale_main_rwa import contract_sale_main_rwa

@@ -11,7 +11,7 @@ from asa_asa import contract_auction_asa_asa, contract_dutch_asa_asa, contract_s
 from asa_rwa import contract_sale_asa_rwa
 from main_arc72 import contract_auction_main_arc72, contract_dutch_main_arc72, contract_sale_main_arc72
 from main_asa import contract_auction_main_asa, contract_dutch_main_asa, contract_sale_main_asa
-from main_rwa import contract_sale_algo_rwa
+from main_rwa import contract_sale_main_rwa
 
 load_dotenv() 
 
@@ -35,7 +35,7 @@ dico_tag = {
     },
     'algo_offchain_sale_approval': {
         'chain': 'algo',
-        'pyteal': contract_sale_algo_rwa
+        'pyteal': contract_sale_main_rwa
     },
     'asa_asa_auction_approval': {
         'chain': 'algo',
@@ -67,7 +67,7 @@ dico_tag = {
     },
     'voi_offchain_sale_approval': {
         'chain': 'voi',
-        'pyteal': contract_sale_algo_rwa
+        'pyteal': contract_sale_main_rwa
     },
     'arc200_arc72_auction_approval': {
         'chain': 'voi',
