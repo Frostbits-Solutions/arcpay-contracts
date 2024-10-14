@@ -548,6 +548,14 @@ def init_asa(index):
     )
 
 
+def end_arc72(to):
+    return Seq(
+        function_fund_arc(nft_app_address),
+        function_transfer_arc72(to),
+        function_close_app(),
+    )
+
+
 def assert_ducth(amount):
     return Assert(
         And(

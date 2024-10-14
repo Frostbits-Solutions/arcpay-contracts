@@ -51,9 +51,7 @@ def contract_auction_arc200_arc72(proxy_app_id):
         function_contract_fees_arc200(App.globalGet(bid_amount)),
         function_fund_arc(arc200_app_address),
         function_payment_manager(App.globalGet(bid_amount), function_transfer_arc200),
-        function_fund_arc(nft_app_address),
-        function_transfer_arc72(App.globalGet(bid_account)),
-        function_close_app(),
+        end_arc72(App.globalGet(bid_account)),
         Approve()
     )
 

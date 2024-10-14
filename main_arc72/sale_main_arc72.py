@@ -21,16 +21,11 @@ def contract_sale_main_arc72(proxy_app_id):
                 Gtxn[Txn.group_index() - Int(1)].sender() == Txn.sender()
             )
         ),
-        Seq(
-            function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
-            function_contract_fees(App.globalGet(price)),
-            function_payment_manager(App.globalGet(price), function_payment),
-            function_fund_arc(nft_app_address),
-            function_transfer_arc72(Txn.sender()),
-            function_close_app(),
-            Approve()
-        ),
-        Reject()
+        function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
+        function_contract_fees(App.globalGet(price)),
+        function_payment_manager(App.globalGet(price), function_payment),
+        end_arc72(Txn.sender()),
+        Approve()
     )
 
     program = Cond(

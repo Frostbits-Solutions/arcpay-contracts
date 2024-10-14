@@ -50,9 +50,7 @@ def contract_auction_main_arc72(proxy_app_id):
         function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},close,{note_signature}")),
         function_contract_fees(App.globalGet(bid_amount)),
         function_payment_manager(App.globalGet(bid_amount), function_payment),
-        function_fund_arc(nft_app_address),
-        function_transfer_arc72(App.globalGet(bid_account)),
-        function_close_app(),
+        end_arc72(App.globalGet(bid_account)),
         Approve()
     )
 
