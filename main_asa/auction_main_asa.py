@@ -50,9 +50,7 @@ def contract_auction_main_asa(proxy_app_id):
         function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},close,{note_signature}")),
         function_contract_fees(App.globalGet(bid_amount)),
         function_payment_manager(App.globalGet(bid_amount), function_payment),
-        function_send_nft_asa(App.globalGet(bid_account), Int(1)),
-        function_asa_optout(App.globalGet(asa_id)),
-        function_close_app(),
+        end_asa(App.globalGet(bid_account)),
         Approve()
     )
 

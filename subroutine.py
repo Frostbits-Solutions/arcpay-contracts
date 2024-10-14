@@ -556,6 +556,14 @@ def end_arc72(to):
     )
 
 
+def end_asa(to):
+    return Seq(
+        function_send_nft_asa(to, Int(1)),
+        function_asa_optout(App.globalGet(asa_id)),
+        function_close_app(),
+    )
+
+
 def assert_ducth(amount):
     return Assert(
         And(
