@@ -7,19 +7,7 @@ note_type = "auction"
 def contract_auction_asa_asa():
     @Subroutine(TealType.none)
     def function_repay_bidder() -> Expr:
-        return Seq(
-            InnerTxnBuilder.Begin(),
-            InnerTxnBuilder.SetFields(
-                {
-                    TxnField.type_enum: TxnType.AssetTransfer,
-                    TxnField.xfer_asset: App.globalGet(paiment_asa_id),
-                    TxnField.asset_receiver: App.globalGet(bid_account),
-                    TxnField.asset_amount: App.globalGet(bid_amount),
-                    TxnField.fee: Global.min_txn_fee()
-                }
-            ),
-            InnerTxnBuilder.Submit(),
-        )
+        return function_payment_asa(App.globalGet(bid_amount), App.globalGet(bid_account))
 
     on_create = Seq(
         init_asa(0),
@@ -64,42 +52,9 @@ def contract_auction_asa_asa():
                 App.globalGet(end_time_key) <= Global.latest_timestamp()
             )
         ),
-        read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
         function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},close,{note_signature}")),
-        function_contract_fees_asa(
-            Div(
-                Mul(
-                    App.globalGet(bid_amount),
-                    Add(
-                        App.globalGet(main_fees),
-                        read_fees.value()
-                    )
-                ),
-                Int(100)
-            ),
-            Div(
-                Mul(
-                    App.globalGet(bid_amount),
-                    read_fees.value()
-                ),
-                Int(100)
-            )
-        ),
-        function_payment_asa(
-            Minus(
-                App.globalGet(bid_amount),
-                Div(
-                    Mul(
-                        App.globalGet(bid_amount),
-                        Add(
-                            App.globalGet(main_fees),
-                            read_fees.value()
-                        )
-                    ),
-                    Int(100)
-                )
-            )
-        ),
+        function_contract_fees_asa(App.globalGet(bid_amount)),
+        function_payment_asa_end(App.globalGet(bid_amount)),
         function_send_nft_asa(App.globalGet(bid_account), Int(1)),
         function_asa_optout(App.globalGet(asa_id)),
         function_asa_optout(App.globalGet(paiment_asa_id)),

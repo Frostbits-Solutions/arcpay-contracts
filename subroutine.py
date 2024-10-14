@@ -178,15 +178,26 @@ def function_contract_fees(amount: Expr, amount_counter_party: Expr) -> Expr:
 
 
 @Subroutine(TealType.none)
-def function_contract_fees_asa(amount: Expr, amount_counter_party: Expr) -> Expr:
+def function_contract_fees_asa(amount: Expr) -> Expr:
     return Seq(
+        read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
+        read_main_fees := App.globalGetEx(App.globalGet(fees_app_id), main_fees),
         InnerTxnBuilder.Begin(),
         InnerTxnBuilder.SetFields(
             {
                 TxnField.type_enum: TxnType.AssetTransfer,
                 TxnField.xfer_asset: App.globalGet(paiment_asa_id),
                 TxnField.asset_receiver: App.globalGet(fees_address),
-                TxnField.asset_amount: amount,
+                TxnField.asset_amount: Div(
+                    Mul(
+                        amount,
+                        Add(
+                            read_main_fees.value(),
+                            read_fees.value()
+                        )
+                    ),
+                    Int(100)
+                ),
                 TxnField.fee: Global.min_txn_fee()
             }
         ),
@@ -198,7 +209,15 @@ def function_contract_fees_asa(amount: Expr, amount_counter_party: Expr) -> Expr
             TxnField.application_args: [
                 Bytes("manage_asa_fees"),
                 App.globalGet(counter_party_address),
-                Itob(amount_counter_party)
+                Itob(
+                    Div(
+                        Mul(
+                            amount,
+                            read_fees.value()
+                        ),
+                        Int(100)
+                    )
+                )
             ]
         }),
         InnerTxnBuilder.Submit(),
@@ -206,8 +225,10 @@ def function_contract_fees_asa(amount: Expr, amount_counter_party: Expr) -> Expr
 
 
 @Subroutine(TealType.none)
-def function_contract_fees_arc200(amount: Expr, amount_counter_party: Expr) -> Expr:
+def function_contract_fees_arc200(amount: Expr) -> Expr:
     return Seq(
+        read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
+        read_main_fees := App.globalGetEx(App.globalGet(fees_app_id), main_fees),
         InnerTxnBuilder.Begin(),
         InnerTxnBuilder.SetFields(
             {
@@ -217,7 +238,21 @@ def function_contract_fees_arc200(amount: Expr, amount_counter_party: Expr) -> E
                 TxnField.application_args: [
                     Bytes("base16", "da7025b9"),
                     App.globalGet(fees_address),
-                    Concat(BytesZero(Int(24)), Itob(amount))
+                    Concat(
+                        BytesZero(Int(24)),
+                        Itob(
+                            Div(
+                                Mul(
+                                    amount,
+                                    Add(
+                                        read_main_fees.value(),
+                                        read_fees.value()
+                                    )
+                                ),
+                                Int(100)
+                            )
+                        )
+                    )
                 ]
             }
         ),
@@ -229,7 +264,15 @@ def function_contract_fees_arc200(amount: Expr, amount_counter_party: Expr) -> E
             TxnField.application_args: [
                 Bytes("manage_arc200_fees"),
                 App.globalGet(counter_party_address),
-                Itob(amount_counter_party),
+                Itob(
+                    Div(
+                        Mul(
+                            amount,
+                            read_fees.value()
+                        ),
+                        Int(100)
+                    )
+                ),
                 Itob(App.globalGet(arc200_app_id)),
             ]
         }),
@@ -387,14 +430,38 @@ def function_send_nft_asa(account: Expr, amount: Expr) -> Expr:
 
 
 @Subroutine(TealType.none)
-def function_payment_asa(amount: Expr) -> Expr:
+def function_payment_asa_end(amount: Expr) -> Expr:
+    return Seq(
+        read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
+        read_main_fees := App.globalGetEx(App.globalGet(fees_app_id), main_fees),
+        function_payment_asa(
+            Minus(
+                amount,
+                Div(
+                    Mul(
+                        amount,
+                        Add(
+                            read_main_fees.value(),
+                            read_fees.value()
+                        )
+                    ),
+                    Int(100)
+                )
+            ),
+            Global.creator_address()
+        )
+    )
+
+
+@Subroutine(TealType.none)
+def function_payment_asa(amount: Expr, to: Expr) -> Expr:
     return Seq(
         InnerTxnBuilder.Begin(),
         InnerTxnBuilder.SetFields(
             {
                 TxnField.type_enum: TxnType.AssetTransfer,
                 TxnField.xfer_asset: App.globalGet(paiment_asa_id),
-                TxnField.asset_receiver: Global.creator_address(),
+                TxnField.asset_receiver: to,
                 TxnField.asset_amount: amount,
                 TxnField.fee: Global.min_txn_fee()
             }
