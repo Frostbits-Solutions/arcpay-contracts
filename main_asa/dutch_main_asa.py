@@ -43,42 +43,9 @@ def contract_dutch_main_asa():
             )
         ),
         Seq(
-            read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
             function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
-            function_contract_fees(
-                Div(
-                    Mul(
-                        Gtxn[Txn.group_index() - Int(1)].amount(),
-                        Add(
-                            App.globalGet(main_fees),
-                            read_fees.value()
-                        )
-                    ),
-                    Int(100)
-                ),
-                Div(
-                    Mul(
-                        Gtxn[Txn.group_index() - Int(1)].amount(),
-                        read_fees.value()
-                    ),
-                    Int(100)
-                )
-            ),
-            function_payment(
-                Minus(
-                    Gtxn[Txn.group_index() - Int(1)].amount(),
-                    Div(
-                        Mul(
-                            Gtxn[Txn.group_index() - Int(1)].amount(),
-                            Add(
-                                App.globalGet(main_fees),
-                                read_fees.value()
-                            )
-                        ),
-                        Int(100)
-                    )
-                )
-            ),
+            function_contract_fees(Gtxn[Txn.group_index() - Int(1)].amount()),
+            function_payment_end(Gtxn[Txn.group_index() - Int(1)].amount()),
             function_send_nft_asa(Txn.sender(), Int(1)),
             function_asa_optout(App.globalGet(asa_id)),
             function_close_app(),

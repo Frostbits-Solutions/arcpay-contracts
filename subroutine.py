@@ -135,7 +135,30 @@ def function_transfer_arc200(amount: Expr, to: Expr) -> Expr:
 
 
 @Subroutine(TealType.none)
-def function_payment(amount: Expr) -> Expr:
+def function_payment_end(amount: Expr) -> Expr:
+    return Seq(
+        read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
+        read_main_fees := App.globalGetEx(App.globalGet(fees_app_id), main_fees),
+        function_payment(
+            Minus(
+                amount,
+                Div(
+                    Mul(
+                        amount,
+                        Add(
+                            read_main_fees.value(),
+                            read_fees.value()
+                        )
+                    ),
+                    Int(100)
+                )
+            ),
+            Global.creator_address())
+    )
+
+
+@Subroutine(TealType.none)
+def function_payment(amount: Expr, to: Expr) -> Expr:
     return Seq(
         InnerTxnBuilder.Begin(),
         InnerTxnBuilder.SetFields(
@@ -143,7 +166,7 @@ def function_payment(amount: Expr) -> Expr:
                 TxnField.type_enum: TxnType.Payment,
                 TxnField.amount: amount,
                 TxnField.sender: Global.current_application_address(),
-                TxnField.receiver: Global.creator_address()
+                TxnField.receiver: to
             }
         ),
         InnerTxnBuilder.Submit()
@@ -151,13 +174,24 @@ def function_payment(amount: Expr) -> Expr:
 
 
 @Subroutine(TealType.none)
-def function_contract_fees(amount: Expr, amount_counter_party: Expr) -> Expr:
+def function_contract_fees(amount: Expr) -> Expr:
     return Seq(
+        read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
+        read_main_fees := App.globalGetEx(App.globalGet(fees_app_id), main_fees),
         InnerTxnBuilder.Begin(),
         InnerTxnBuilder.SetFields(
             {
                 TxnField.type_enum: TxnType.Payment,
-                TxnField.amount: amount,
+                TxnField.amount: Div(
+                    Mul(
+                        amount,
+                        Add(
+                            read_main_fees.value(),
+                            read_fees.value()
+                        )
+                    ),
+                    Int(100)
+                ),
                 TxnField.sender: Global.current_application_address(),
                 TxnField.receiver: App.globalGet(fees_address)
             }
@@ -170,7 +204,15 @@ def function_contract_fees(amount: Expr, amount_counter_party: Expr) -> Expr:
             TxnField.application_args: [
                 Bytes("manage_network_fees"),
                 App.globalGet(counter_party_address),
-                Itob(amount_counter_party)
+                Itob(
+                    Div(
+                        Mul(
+                            amount,
+                            read_fees.value()
+                        ),
+                        Int(100)
+                    )
+                )
             ]
         }),
         InnerTxnBuilder.Submit(),

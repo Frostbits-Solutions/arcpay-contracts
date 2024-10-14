@@ -7,17 +7,7 @@ note_type = "auction"
 def contract_auction_main_arc72():
     @Subroutine(TealType.none)
     def function_repay_bidder() -> Expr:
-        return Seq(
-            InnerTxnBuilder.Begin(),
-            InnerTxnBuilder.SetFields(
-                {
-                    TxnField.type_enum: TxnType.Payment,
-                    TxnField.amount: App.globalGet(bid_amount) - Global.min_txn_fee(),
-                    TxnField.receiver: App.globalGet(bid_account),
-                }
-            ),
-            InnerTxnBuilder.Submit(),
-        )
+        return function_payment(App.globalGet(bid_amount), App.globalGet(bid_account))
 
     on_create = Seq(
         initialisation_arc72(0),
@@ -60,42 +50,9 @@ def contract_auction_main_arc72():
                 App.globalGet(end_time_key) <= Global.latest_timestamp()
             )
         ),
-        read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
         function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},close,{note_signature}")),
-        function_contract_fees(
-            Div(
-                Mul(
-                    App.globalGet(bid_amount),
-                    Add(
-                        App.globalGet(main_fees),
-                        read_fees.value()
-                    )
-                ),
-                Int(100)
-            ),
-            Div(
-                Mul(
-                    App.globalGet(bid_amount),
-                    read_fees.value()
-                ),
-                Int(100)
-            )
-        ),
-        function_payment(
-            Minus(
-                App.globalGet(bid_amount),
-                Div(
-                    Mul(
-                        App.globalGet(bid_amount),
-                        Add(
-                            App.globalGet(main_fees),
-                            read_fees.value()
-                        )
-                    ),
-                    Int(100)
-                )
-            )
-        ),
+        function_contract_fees(App.globalGet(bid_amount)),
+        function_payment_end(App.globalGet(bid_amount)),
         function_fund_arc(nft_app_address),
         function_transfer_arc72(App.globalGet(bid_account)),
         function_close_app(),
