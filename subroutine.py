@@ -421,7 +421,6 @@ def function_send_nft_asa(account: Expr, amount: Expr) -> Expr:
     )
 
 
-@Subroutine(TealType.none)
 def function_payment_manager(amount: Expr, main_function) -> Expr:
     return Seq(
         read_fees := App.globalGetEx(App.globalGet(fees_app_id), App.globalGet(counter_party_address)),
