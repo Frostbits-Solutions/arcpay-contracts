@@ -102,7 +102,7 @@ def compile_contract(tag, proxy_app_id):
 if __name__ == "__main__":
     fees_app_id_dict = {
         'algo': {
-            'testnet': 718742597,
+            'testnet': 724182571,
             'mainnet': 2337523785
         },
         'voi': {
