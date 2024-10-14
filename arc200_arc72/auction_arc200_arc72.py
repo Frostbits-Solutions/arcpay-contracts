@@ -6,10 +6,6 @@ note_type = "auction"
 
 def contract_auction_arc200_arc72(proxy_app_id):
 
-    @Subroutine(TealType.none)
-    def function_repay_bidder() -> Expr:
-        return function_transfer_arc200(App.globalGet(bid_amount), App.globalGet(bid_account))
-
     on_create = Seq(
         initialisation_arc72(0),
         initialisation_arc200(4),
@@ -31,7 +27,7 @@ def contract_auction_arc200_arc72(proxy_app_id):
             If(
                 App.globalGet(bid_account) != Global.zero_address()
             ).Then(
-                function_repay_bidder()
+                function_transfer_arc200(App.globalGet(bid_amount), App.globalGet(bid_account))
             ),
             App.globalPut(bid_amount, Btoi(Txn.application_args[1])),
             App.globalPut(bid_account, Txn.sender()),
@@ -72,7 +68,7 @@ def contract_auction_arc200_arc72(proxy_app_id):
         If(
             App.globalGet(bid_account) != Global.zero_address()
         ).Then(
-            function_repay_bidder()
+            function_transfer_arc200(App.globalGet(bid_amount), App.globalGet(bid_account))
         ),
         function_close_app(),
         Approve()

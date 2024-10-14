@@ -5,9 +5,6 @@ note_type = "auction"
 
 
 def contract_auction_asa_asa(proxy_app_id):
-    @Subroutine(TealType.none)
-    def function_repay_bidder() -> Expr:
-        return function_payment_asa(App.globalGet(bid_amount), App.globalGet(bid_account))
 
     on_create = Seq(
         init_asa(0),
@@ -32,7 +29,7 @@ def contract_auction_asa_asa(proxy_app_id):
             If(
                 App.globalGet(bid_account) != Global.zero_address()
             ).Then(
-                function_repay_bidder()
+                function_payment_asa(App.globalGet(bid_amount), App.globalGet(bid_account))
             ),
             App.globalPut(bid_amount, Gtxn[Txn.group_index() - Int(1)].asset_amount()),
             App.globalPut(bid_account, Gtxn[Txn.group_index() - Int(1)].sender()),
@@ -73,7 +70,7 @@ def contract_auction_asa_asa(proxy_app_id):
         If(
             App.globalGet(bid_account) != Global.zero_address()
         ).Then(
-            function_repay_bidder()
+            function_payment_asa(App.globalGet(bid_amount), App.globalGet(bid_account))
         ),
         function_asa_optout(App.globalGet(asa_id)),
         function_asa_optout(App.globalGet(paiment_asa_id)),
