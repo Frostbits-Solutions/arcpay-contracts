@@ -95,7 +95,7 @@ def compile_contract(tag, proxy_app_id):
     headers_tx = {"X-Algo-API-Token": algod_token_tx}
     client = AlgodClient(
         algod_token=algod_token_tx,
-        algod_address="https://testnet-api.voi.nodly.io:443",
+        algod_address="https://mainnet-api.voi.nodely.dev",
         headers=headers_tx,
     )
     return client.compile(compiled)['result']
