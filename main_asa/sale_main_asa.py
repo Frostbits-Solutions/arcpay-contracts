@@ -12,19 +12,26 @@ def contract_sale_main_asa(proxy_app_id):
         initialisation_smartcontract(2, proxy_app_id)
     )
 
+    number_asa_hold = AssetHolding.balance(Global.current_application_address(), App.globalGet(asa_id))
+    number_asa_buy = ScratchVar(TealType.uint64)
     on_buy = Seq(
+        number_asa_hold,
+        number_asa_buy.store(Gtxn[Txn.group_index() - Int(1)].amount() / App.globalGet(price)),
         Assert(
             And(
-                Gtxn[Txn.group_index() - Int(1)].amount() == App.globalGet(price),
+                number_asa_hold.hasValue(),
+                number_asa_hold.value() >= number_asa_buy.load(),
+                Gtxn[Txn.group_index() - Int(1)].amount() == Mul((number_asa_buy.load()), App.globalGet(price)),
                 Gtxn[Txn.group_index() - Int(1)].receiver() == Global.current_application_address(),
                 Gtxn[Txn.group_index() - Int(1)].type_enum() == TxnType.Payment,
                 Gtxn[Txn.group_index() - Int(1)].sender() == Txn.sender()
             )
         ),
         function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
-        function_contract_fees(App.globalGet(price)),
-        function_payment_manager(App.globalGet(price), function_payment),
-        end_asa(Txn.sender()),
+        function_contract_fees(Mul((number_asa_buy.load()), App.globalGet(price))),
+        function_payment_manager(Mul((number_asa_buy.load()), App.globalGet(price)), function_payment),
+        function_send_nft_asa(Txn.sender(), number_asa_buy.load()),
+        end_asa(Txn.sender(), number_asa_buy.load(), number_asa_buy.load() == number_asa_hold.value()),
         Approve()
     )
 

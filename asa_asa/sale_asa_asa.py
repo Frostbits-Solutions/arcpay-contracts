@@ -13,10 +13,16 @@ def contract_sale_asa_asa(proxy_app_id):
         initialisation_smartcontract(3, proxy_app_id)
     )
 
+    number_asa_hold = AssetHolding.balance(Global.current_application_address(), App.globalGet(asa_id))
+    number_asa_buy = ScratchVar(TealType.uint64)
     on_buy = Seq(
+        number_asa_hold,
+        number_asa_buy.store(Gtxn[Txn.group_index() - Int(1)].asset_amount() / App.globalGet(price)),
         Assert(
             And(
-                Gtxn[Txn.group_index() - Int(1)].asset_amount() == App.globalGet(price),
+                number_asa_hold.hasValue(),
+                number_asa_hold.value() >= number_asa_buy.load(),
+                Gtxn[Txn.group_index() - Int(1)].asset_amount() == Mul((number_asa_buy.load()), App.globalGet(price)),
                 Gtxn[Txn.group_index() - Int(1)].asset_receiver() == Global.current_application_address(),
                 Gtxn[Txn.group_index() - Int(1)].type_enum() == TxnType.AssetTransfer,
                 Gtxn[Txn.group_index() - Int(1)].sender() == Txn.sender(),
@@ -24,10 +30,12 @@ def contract_sale_asa_asa(proxy_app_id):
             )
         ),
         function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},buy,{note_signature}")),
-        function_contract_fees_asa(App.globalGet(price)),
-        function_payment_manager(App.globalGet(price), function_payment_asa),
-        function_asa_optout(App.globalGet(paiment_asa_id)),
-        end_asa(Txn.sender()),
+        function_contract_fees_asa(Mul((number_asa_buy.load()), App.globalGet(price))),
+        function_payment_manager(Mul((number_asa_buy.load()), App.globalGet(price)), function_payment_asa),
+        If(number_asa_buy.load() == number_asa_hold.value()).Then(
+            function_asa_optout(App.globalGet(paiment_asa_id))
+        ),
+        end_asa(Txn.sender(), number_asa_buy.load(), number_asa_buy.load() == number_asa_hold.value()),
         Approve()
     )
 
