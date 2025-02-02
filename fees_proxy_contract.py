@@ -12,6 +12,7 @@ def approval_program():
     on_create = Seq(
         App.globalPut(Concat(Bytes('m_'), Txn.sender()), Txn.sender()),
         App.globalPut(Bytes('main_fees'), Int(2)),
+        App.globalPut(Bytes('main_fees_creation'), Int(1_000_000)),
         Approve()
     )
 
@@ -24,6 +25,7 @@ def approval_program():
     update_main_fees = Seq(
         Assert(App.globalGet(Concat(Bytes('m_'), Txn.sender())) == Txn.sender()),
         App.globalPut(Bytes('main_fees'), Btoi(Txn.application_args[1])),
+        App.globalPut(Bytes('main_fees_creation'), Btoi(Txn.application_args[2])),
         Approve()
     )
 
@@ -54,6 +56,14 @@ def approval_program():
     add_client = Seq(
         Assert(App.globalGet(Concat(Bytes('m_'), Txn.sender())) == Txn.sender()),
         App.globalPut(Txn.application_args[1], Btoi(Txn.application_args[2])),
+        # We don't want 0 as fees creation for a client, else by default it will use main fees, so we use 1 Micro Algo
+        If(
+            Btoi(Txn.application_args[3]) == Int(0)
+        ).Then(
+            App.globalPut(Concat(Bytes('creation_'), Txn.application_args[1]), Int(1))
+        ).Else(
+            App.globalPut(Concat(Bytes('creation_'), Txn.application_args[1]), Btoi(Txn.application_args[3])),
+        ),
         Approve()
     )
 
