@@ -42,7 +42,8 @@ jobs:
       env:
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }} 
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        SUPABASE_ENV: ${{ github.event.inputs.environment }}
         TAG_FILTER: ${{ github.event.inputs.tag_filter }}
         VERSION: ${{ github.event.inputs.version }}
         COMMENT: ${{ github.event.inputs.comment }}
-        NETWORK: ${{ github.event.inputs.network }} 
+        NETWORK: ${{ github.event.inputs.network }}
