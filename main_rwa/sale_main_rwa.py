@@ -9,7 +9,7 @@ def contract_sale_main_rwa(proxy_app_id):
     on_create = Seq(
         initialisation_sale(0),
         initialisation_rwa(1),
-        initialisation_smartcontract(3, proxy_app_id)
+        initialisation_smartcontract(4, proxy_app_id)
     )
 
     number_buy = ScratchVar(TealType.uint64)
