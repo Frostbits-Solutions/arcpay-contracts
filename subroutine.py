@@ -1,7 +1,6 @@
 from pyteal import *
 
 # CONFIG
-CREATE_FEES = 0
 ZERO_FEES = 0
 
 fees_address = Bytes('fees_address')
@@ -26,6 +25,7 @@ counter_party_address = Bytes("counter_party_address")
 total_client = Bytes('total_client')
 paiment_asa_id = Bytes('paiment_asa_id')
 nft_app_address = Bytes('nft_app_address')
+stock = Bytes('stock')
 
 
 @Subroutine(TealType.none)
@@ -308,6 +308,23 @@ def on_update(note):
     )
 
 
+def on_update_stock(note):
+    return Seq(
+        Assert(
+            And(
+                Txn.sender() == Global.creator_address(),
+                Btoi(Txn.application_args[1]) > Int(0)
+            )
+        ),
+        Seq(
+            function_send_note(Int(ZERO_FEES), Bytes(note)),
+            App.globalPut(stock, Btoi(Txn.application_args[1])),
+            Approve()
+        ),
+        Reject()
+    )
+
+
 def on_delete(note):
     return Seq(
         Assert(Txn.sender() == Global.creator_address()),
@@ -320,7 +337,18 @@ def on_delete(note):
 def on_fund(note):
     return Seq(
         Assert(Txn.sender() == Global.creator_address()),
-        function_send_note(Int(CREATE_FEES), Bytes(note)),
+        read_client_creation_fees := App.globalGetEx(
+            App.globalGet(fees_app_id),
+            Concat(Bytes('creation_'), App.globalGet(counter_party_address))
+        ),
+        If(
+            read_client_creation_fees.value() == Int(0)
+        ).Then(
+            read_main_creation_fees := App.globalGetEx(App.globalGet(fees_app_id), Bytes('main_fees_creation')),
+            function_send_note(read_main_creation_fees.value(), Bytes(note))
+        ).Else(
+            function_send_note(read_client_creation_fees.value(), Bytes(note))
+        ),
         Approve()
     )
 
@@ -328,7 +356,18 @@ def on_fund(note):
 def on_fund_optin_only_asa(note):
     return Seq(
         Assert(Txn.sender() == Global.creator_address()),
-        function_send_note(Int(CREATE_FEES), Bytes(note)),
+        read_client_creation_fees := App.globalGetEx(
+            App.globalGet(fees_app_id),
+            Concat(Bytes('creation_'), App.globalGet(counter_party_address))
+        ),
+        If(
+            read_client_creation_fees.value() == Int(0)
+        ).Then(
+            read_main_creation_fees := App.globalGetEx(App.globalGet(fees_app_id), Bytes('main_fees_creation')),
+            function_send_note(read_main_creation_fees.value(), Bytes(note))
+        ).Else(
+            function_send_note(read_client_creation_fees.value(), Bytes(note))
+        ),
         Seq(
             InnerTxnBuilder.Begin(),
             InnerTxnBuilder.SetFields(
@@ -347,7 +386,18 @@ def on_fund_optin_only_asa(note):
 def on_fund_optin_asa(note):
     return Seq(
         Assert(Txn.sender() == Global.creator_address()),
-        function_send_note(Int(CREATE_FEES), Bytes(note)),
+        read_client_creation_fees := App.globalGetEx(
+            App.globalGet(fees_app_id),
+            Concat(Bytes('creation_'), App.globalGet(counter_party_address))
+        ),
+        If(
+            read_client_creation_fees.value() == Int(0)
+        ).Then(
+            read_main_creation_fees := App.globalGetEx(App.globalGet(fees_app_id), Bytes('main_fees_creation')),
+            function_send_note(read_main_creation_fees.value(), Bytes(note))
+        ).Else(
+            function_send_note(read_client_creation_fees.value(), Bytes(note))
+        ),
         Seq(
             InnerTxnBuilder.Begin(),
             InnerTxnBuilder.SetFields(
@@ -377,7 +427,18 @@ def on_fund_optin_asa(note):
 def on_fund_optin(note):
     return Seq(
         Assert(Txn.sender() == Global.creator_address()),
-        function_send_note(Int(CREATE_FEES), Bytes(note)),
+        read_client_creation_fees := App.globalGetEx(
+            App.globalGet(fees_app_id),
+            Concat(Bytes('creation_'), App.globalGet(counter_party_address))
+        ),
+        If(
+            read_client_creation_fees.value() == Int(0)
+        ).Then(
+            read_main_creation_fees := App.globalGetEx(App.globalGet(fees_app_id), Bytes('main_fees_creation')),
+            function_send_note(read_main_creation_fees.value(), Bytes(note))
+        ).Else(
+            function_send_note(read_client_creation_fees.value(), Bytes(note))
+        ),
         Seq(
             InnerTxnBuilder.Begin(),
             InnerTxnBuilder.SetFields(
@@ -517,6 +578,7 @@ def initialisation_rwa(index):
     return Seq(
         App.globalPut(name, Txn.application_args[index]),
         App.globalPut(description, Txn.application_args[index + 1]),
+        App.globalPut(stock, Btoi(Txn.application_args[index + 2]))
     )
 
 
@@ -555,11 +617,13 @@ def end_arc72(to):
     )
 
 
-def end_asa(to):
+def end_asa(to, number_asa_buy=Int(1), close_app=Int(1)):
     return Seq(
-        function_send_nft_asa(to, Int(1)),
-        function_asa_optout(App.globalGet(asa_id)),
-        function_close_app(),
+        function_send_nft_asa(to, number_asa_buy),
+        If(close_app).Then(
+            function_asa_optout(App.globalGet(asa_id)),
+            function_close_app(),
+        )
     )
 
 
