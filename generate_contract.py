@@ -107,6 +107,10 @@ if __name__ == "__main__":
             'DEV': {
                 'testnet': 724183069,
                 'mainnet': 2337523785
+            },
+            'PROD': {
+                'testnet': 733560801,
+                'mainnet': 2754196612
             }
 
         },
