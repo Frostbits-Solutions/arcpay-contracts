@@ -58,7 +58,11 @@ def contract_auction_main_arc72(proxy_app_id):
         Assert(
             Or(
                 Txn.sender() == Global.creator_address(),
-                Txn.sender() == App.globalGet(fees_address)
+                Txn.sender() == App.globalGet(fees_address),
+                And(
+                    App.globalGet(end_time_key) + Int(86_400) <= Global.latest_timestamp(),
+                    Txn.sender() == App.globalGet(bid_account)
+                )
             )
         ),
         function_send_note(Int(ZERO_FEES), Bytes(f"{note_type},cancel,{note_signature}")),
